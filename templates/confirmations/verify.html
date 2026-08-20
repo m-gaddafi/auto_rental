@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="mb-3">Verify Confirmation</h2>
+<div class="card p-3 mb-3">
+  <p><strong>Transaction:</strong> {{ confirmation.payment.transaction_id }}</p>
+  <p><strong>Sender:</strong> {{ confirmation.payment.sender_name }} ({{ confirmation.payment.sender_phone }})</p>
+  <p><strong>Amount:</strong> UGX {{ confirmation.payment.amount }}</p>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header bg-light">Payment allocations</div>
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead>
+        <tr>
+          <th>Unit</th>
+          <th>Amount</th>
+          <th>Tag</th>
+          <th>Month</th>
+          <th>Year</th>
+          <th>Comment</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for allocation in confirmation.allocations.all %}
+        <tr>
+          <td>{{ allocation.unit.unit_id|default:'-' }}</td>
+          <td>UGX {{ allocation.amount }}</td>
+          <td>{{ allocation.allocation_tag }}</td>
+          <td>{{ allocation.payment_month|default:'-' }}</td>
+          <td>{{ allocation.payment_year|default:'-' }}</td>
+          <td>{{ allocation.comment|default:'-' }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-muted">No allocations added for this confirmation.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="card p-3 mb-3">
+  <p><strong>Manager comment:</strong> {{ confirmation.confirmation_comment|default:'-' }}</p>
+  <p class="mb-0"><strong>Confirmed by:</strong> {{ confirmation.confirmed_by|default:'-' }}</p>
+</div>
+<form method="post" class="card p-3">
+  {% csrf_token %}
+  <button type="submit" name="action" value="verify" class="btn btn-success me-2">Verify</button>
+  <button type="submit" name="action" value="reject" class="btn btn-danger">Reject</button>
+</form>
+{% endblock %}

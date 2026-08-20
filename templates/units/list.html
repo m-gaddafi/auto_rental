@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-1">
+  <h2 class="mb-0">Unit Details</h2>
+  {% if can_add_unit %}<a class="btn btn-success" href="{% url 'create_unit' %}">Add unit</a>{% endif %}
+</div>
+<p class="text-muted">Monthly rental collection sheet for {{ sheet.year }}.</p>
+{% include 'includes/rent_sheet.html' %}
+{% endblock %}

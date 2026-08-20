@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header bg-dark text-white">Add New Unit</div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button class="btn btn-success" type="submit">Create unit</button>
+          <a href="{% url 'units_dashboard' %}" class="btn btn-secondary ms-2">Back to units</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

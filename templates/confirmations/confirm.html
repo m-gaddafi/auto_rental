@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="mb-3">Confirm Payment</h2>
+<div class="card p-3 mb-3">
+  <p><strong>Transaction:</strong> {{ payment.transaction_id }}</p>
+  <p><strong>Sender:</strong> {{ payment.sender_name }} ({{ payment.sender_phone }})</p>
+  <p><strong>Amount received:</strong> UGX {{ payment.amount }}</p>
+  <p><strong>Current suggestion:</strong> {{ payment.matched_unit.unit_id|default:'None' }}</p>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header bg-light">MTN Payment Summary</div>
+  <div class="card-body">
+    <p><strong>Date:</strong> {{ payment.payment_date }} {{ payment.payment_time }}</p>
+    <p><strong>Sender:</strong> {{ payment.sender_name }} ({{ payment.sender_phone }})</p>
+    <p><strong>Amount:</strong> UGX {{ payment.amount }}</p>
+    <p><strong>Raw payment details:</strong></p>
+    <pre class="small bg-light p-3 rounded">{{ payment.raw_text }}</pre>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header bg-light">Unit details</div>
+  <div class="card-body">
+    <table class="table table-sm mb-0">
+      <thead>
+        <tr><th>Unit</th><th>Rate</th><th>Paid</th><th>Balance</th></tr>
+      </thead>
+      <tbody>
+        {% for unit in units %}
+        <tr>
+          <td>{{ unit.unit_id }}</td>
+          <td>UGX {{ unit.monthly_rate }}</td>
+          <td>UGX {{ unit.total_paid }}</td>
+          <td>UGX {{ unit.current_balance }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<form method="post" class="card p-3">
+  {% csrf_token %}
+  {{ form.payment_id }}
+
+  <div class="mb-4">
+    <h5 class="mb-3">Payment allocation table</h5>
+    <table class="table table-bordered align-middle">
+      <thead>
+        <tr>
+          <th>Unit</th>
+          <th>Amount</th>
+          <th>Tag</th>
+          <th>Month</th>
+          <th>Year</th>
+          <th aria-label="Remove allocation"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for allocation in form.allocation_rows %}
+        <tr class="allocation-row" data-index="{{ allocation.index }}">
+          <td>{{ allocation.unit }}</td>
+          <td>{{ allocation.amount }}</td>
+          <td>{{ allocation.tag }}</td>
+          <td>{{ allocation.month }}</td>
+          <td>{{ allocation.year }}</td>
+          <td><button type="button" class="btn btn-outline-danger btn-sm remove-allocation">Remove</button></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <button type="button" id="add-allocation" class="btn btn-outline-dark btn-sm">Add allocation</button>
+
+    <div class="alert alert-light border mt-3">
+      <strong>Allocation total:</strong> UGX <span id="allocation-total">0</span>
+      <span class="text-muted">/ Payment total: UGX {{ payment.amount }}</span>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    {{ form.confirmation_comment.label_tag }}
+    {{ form.confirmation_comment }}
+    {% if form.confirmation_comment.errors %}
+      <div class="text-danger small mt-1">{{ form.confirmation_comment.errors|join:', ' }}</div>
+    {% endif %}
+  </div>
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger">
+      {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+    </div>
+  {% endif %}
+  <button class="btn btn-dark" type="submit">Save confirmation</button>
+</form>
+
+<script>
+  function updateAllocationTotal() {
+    const paymentTotal = Number('{{ payment.amount|default:0 }}'.replace(/,/g, '')) || 0;
+    const inputs = document.querySelectorAll('input[name^="allocation_amount_"]');
+    let total = 0;
+    inputs.forEach((input) => {
+      const value = parseFloat(input.value || 0);
+      if (!Number.isNaN(value)) total += value;
+    });
+    const totalDisplay = document.getElementById('allocation-total');
+    if (totalDisplay) {
+      totalDisplay.textContent = total.toLocaleString();
+    }
+    const alertBox = totalDisplay && totalDisplay.parentElement;
+    if (alertBox) {
+      alertBox.classList.toggle('alert-danger', paymentTotal > 0 && total !== paymentTotal);
+      alertBox.classList.toggle('alert-success', paymentTotal > 0 && total === paymentTotal);
+      alertBox.classList.toggle('border', true);
+    }
+  }
+
+  function addAllocationRow() {
+    const body = document.querySelector('.allocation-row')?.parentElement;
+    const source = document.querySelector('.allocation-row');
+    if (!body || !source) return;
+
+    const indexes = Array.from(document.querySelectorAll('.allocation-row')).map((row) => Number(row.dataset.index));
+    const nextIndex = Math.max(...indexes) + 1;
+    const row = source.cloneNode(true);
+    row.dataset.index = nextIndex;
+    row.querySelectorAll('input, select').forEach((field) => {
+      field.name = field.name.replace(/_\d+$/, `_${nextIndex}`);
+      field.id = field.id.replace(/_\d+$/, `_${nextIndex}`);
+      if (field.tagName === 'SELECT') field.selectedIndex = 0;
+      else field.value = '';
+    });
+    body.appendChild(row);
+    updateAllocationTotal();
+  }
+
+  document.getElementById('add-allocation').addEventListener('click', addAllocationRow);
+  document.addEventListener('click', (event) => {
+    if (event.target.classList.contains('remove-allocation')) {
+      event.target.closest('.allocation-row').remove();
+      updateAllocationTotal();
+    }
+  });
+  document.addEventListener('DOMContentLoaded', updateAllocationTotal);
+  document.addEventListener('input', updateAllocationTotal);
+</script>
+{% endblock %}

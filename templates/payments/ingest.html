@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="mb-3">Paste MTN Payment Summary</h2>
+<p class="text-muted">Enter the MTN payment details exactly as received. Example below shows the format the parser expects.</p>
+<div class="card mb-3">
+  <div class="card-body bg-light">
+    <pre>TxnID: 1234567890
+Date: 05/08/2026
+Time: 14:22
+From: John Doe
+Tel: +256712345678
+Amount: UGX 500000</pre>
+  </div>
+</div>
+<form method="post">
+  {% csrf_token %}
+  <div class="mb-3">
+    {{ form.raw_text.label_tag }}
+    {{ form.raw_text }}
+  </div>
+  <button class="btn btn-primary" type="submit">Parse and review</button>
+</form>
+{% endblock %}

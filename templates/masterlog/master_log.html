@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="mb-1">Master Log</h2>
+<p class="text-muted">Monthly rent collection summary for {{ sheet.year }}.</p>
+{% include 'includes/rent_sheet.html' %}
+{% endblock %}

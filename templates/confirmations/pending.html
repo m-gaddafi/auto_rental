@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="mb-3">Pending Confirmations</h2>
+<p class="text-muted">Select the unit and payment status for each payment in the confirmation screen.</p>
+{% if payments %}
+<ul class="list-group">
+  {% for payment in payments %}
+  <li class="list-group-item d-flex justify-content-between align-items-center">
+    <div>
+      <strong>{{ payment.transaction_id }}</strong><br>
+      {{ payment.sender_name }} • {{ payment.sender_phone }} • UGX {{ payment.amount }}
+      {% if payment.matched_unit %}<br><span class="text-muted">Current suggestion: {{ payment.matched_unit.unit_id }}</span>{% endif %}
+    </div>
+    <a class="btn btn-outline-dark btn-sm" href="{% url 'confirm_payment' payment.id %}">Confirm</a>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>No payments awaiting confirmation.</p>
+{% endif %}
+{% endblock %}
