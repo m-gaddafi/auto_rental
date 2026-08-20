@@ -1,10 +1,17 @@
 from pathlib import Path
 from decouple import config
+import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config('SECRET_KEY' )
-DEBUG = config('DEBUG', default=False, cast=bool)
+# Treat values such as the local machine's `DEBUG=release` as False instead of
+# failing during settings import.  Only an explicit true-like value enables it.
+DEBUG = config(
+    'DEBUG',
+    default=False,
+    cast=lambda value: str(value).strip().lower() in {'1', 'true', 'yes', 'on'},
+)
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'testserver','https://auto-rental-delta.vercel.app/','*']
 
@@ -53,12 +60,27 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'project.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Vercel serverless functions have a read-only, ephemeral filesystem, so SQLite
+# cannot be used there.  Vercel Postgres supplies POSTGRES_URL automatically;
+# DATABASE_URL is also accepted for Neon, Supabase, and other PostgreSQL hosts.
+DATABASE_URL = config('DATABASE_URL', default=config('POSTGRES_URL', default=''))
+
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
-}
+else:
+    # Keep zero-configuration SQLite for local development only.
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
