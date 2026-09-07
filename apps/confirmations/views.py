@@ -56,15 +56,9 @@ def confirm_payment(request, payment_id):
             )
 
             for row in allocation_rows:
-                allocation_unit = Unit.objects.filter(unit_id=row['unit']).first()
-                if not allocation_unit:
-                    allocation_unit, _ = Unit.objects.get_or_create(
-                        unit_id=row['unit'],
-                        defaults={'tenant_name': payment.sender_name, 'tenant_phone': payment.sender_phone},
-                    )
                 PaymentAllocation.objects.create(
                     confirmation=confirmation,
-                    unit=allocation_unit,
+                    unit=row['unit'],
                     amount=row['amount'],
                     allocation_tag=row['tag'],
                     payment_month=row['month'],

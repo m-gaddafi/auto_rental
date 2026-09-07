@@ -23,12 +23,12 @@ Vercel CLI:
 vercel env pull .env.vercel.local --environment=production
 $env:DATABASE_URL = (Get-Content .env.vercel.local |
   Where-Object { $_ -match '^DATABASE_URL=' } |
-  ForEach-Object { $_.Substring('DATABASE_URL='.Length) })
+  ForEach-Object { $_.Substring('DATABASE_URL='.Length).Trim('"') })
 
 # If Vercel supplied POSTGRES_URL instead, use this line in place of the one above.
 # $env:POSTGRES_URL = (Get-Content .env.vercel.local |
 #   Where-Object { $_ -match '^POSTGRES_URL=' } |
-#   ForEach-Object { $_.Substring('POSTGRES_URL='.Length) })
+#   ForEach-Object { $_.Substring('POSTGRES_URL='.Length).Trim('"') })
 
 python manage.py migrate
 ```

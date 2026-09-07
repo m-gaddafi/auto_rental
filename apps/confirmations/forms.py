@@ -4,6 +4,8 @@ import re
 
 from django import forms
 
+from apps.units.models import Unit
+
 
 class ConfirmationForm(forms.Form):
     ALLOCATION_TAG_CHOICES = [
@@ -60,7 +62,12 @@ class ConfirmationForm(forms.Form):
             })
 
     def _add_allocation_fields(self, index, year_choices):
-        self.fields[f'allocation_unit_{index}'] = forms.CharField(max_length=50, required=False, label='Unit')
+        self.fields[f'allocation_unit_{index}'] = forms.ModelChoiceField(
+            queryset=Unit.objects.filter(is_active=True).order_by('unit_id'),
+            required=False,
+            empty_label='Select unit',
+            label='Unit',
+        )
         self.fields[f'allocation_amount_{index}'] = forms.DecimalField(max_digits=12, decimal_places=2, min_value=0, required=False, label='Amount')
         self.fields[f'allocation_tag_{index}'] = forms.ChoiceField(choices=self.ALLOCATION_TAG_CHOICES, required=False, label='Tag')
         self.fields[f'allocation_month_{index}'] = forms.ChoiceField(choices=self.MONTH_CHOICES, required=False, label='Month')
@@ -69,7 +76,7 @@ class ConfirmationForm(forms.Form):
     def get_allocation_rows(self):
         rows = []
         for index in self.allocation_indexes:
-            unit = (self.cleaned_data.get(f'allocation_unit_{index}') or '').strip()
+            unit = self.cleaned_data.get(f'allocation_unit_{index}')
             amount = self.cleaned_data.get(f'allocation_amount_{index}')
             tag = (self.cleaned_data.get(f'allocation_tag_{index}') or '').strip()
             month = (self.cleaned_data.get(f'allocation_month_{index}') or '').strip()

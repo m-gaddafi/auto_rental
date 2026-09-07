@@ -12,6 +12,26 @@ from apps.confirmations.forms import ConfirmationForm
 
 
 class PaymentAllocationTest(TestCase):
+    def test_confirmation_form_only_allows_active_units(self):
+        active_unit = Unit.objects.create(unit_id='U-101', is_active=True)
+        inactive_unit = Unit.objects.create(unit_id='U-102', is_active=False)
+
+        form = ConfirmationForm(
+            data={
+                'payment_id': 1,
+                'allocation_unit_1': str(active_unit.pk),
+                'allocation_amount_1': '5000.00',
+                'allocation_tag_1': 'full',
+                'allocation_month_1': 'january',
+                'allocation_year_1': '2026',
+                'confirmation_comment': 'Payment confirmed',
+            }
+        )
+
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.get_allocation_rows()[0]['unit'].pk, active_unit.pk)
+        self.assertNotIn(inactive_unit, form.fields['allocation_unit_1'].queryset)
+
     def test_total_allocations_matches_payment_amount(self):
         payment = RawPayment.objects.create(
             transaction_id='TX-ALLOC-001',
