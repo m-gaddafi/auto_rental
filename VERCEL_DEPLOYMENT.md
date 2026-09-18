@@ -15,9 +15,12 @@ uses SQLite only when neither `DATABASE_URL` nor `POSTGRES_URL` is available.
 
 ## Run migrations against production
 
-Migrations must be run by a command with access to the production database; a
-serverless HTTP request does not run them. From a machine authenticated with the
-Vercel CLI:
+The repository's `vercel.json` runs `python manage.py migrate --noinput` during
+each Vercel build. Redeploy after adding or changing migrations so the build can
+apply them to the production PostgreSQL database before requests are served.
+
+For the current deployment, run the migration once from a machine authenticated
+with the Vercel CLI, then redeploy:
 
 ```powershell
 vercel env pull .env.vercel.local --environment=production
