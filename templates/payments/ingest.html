@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <h2 class="mb-3">Paste MTN Payment Summary</h2>
-<p class="text-muted">Enter the MTN payment details exactly as received. Example below shows the format the parser expects.</p>
+<p class="text-muted">Paste payment text or upload a Word/Excel file. Uploaded transactions are shown for review before they are imported.</p>
 <div class="card mb-3">
   <div class="card-body bg-light">
     <pre>TxnID: 1234567890
@@ -12,11 +12,16 @@ Tel: +256712345678
 Amount: UGX 500000</pre>
   </div>
 </div>
-<form method="post">
+<form method="post" enctype="multipart/form-data">
   {% csrf_token %}
   <div class="mb-3">
     {{ form.raw_text.label_tag }}
     {{ form.raw_text }}
+  </div>
+  <div class="mb-3">
+    {{ form.raw_file.label_tag }}
+    {{ form.raw_file }}
+    <div class="form-text">{{ form.raw_file.help_text }}</div>
   </div>
   <button class="btn btn-primary" type="submit">Parse and review</button>
 </form>

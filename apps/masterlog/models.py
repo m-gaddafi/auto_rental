@@ -30,7 +30,7 @@ class MasterLogEntry(models.Model):
         ('december', 'December'),
     ]
 
-    payment = models.OneToOneField(RawPayment, on_delete=models.CASCADE, related_name='master_entry')
+    payment = models.ForeignKey(RawPayment, on_delete=models.CASCADE, related_name='master_entries')
     unit = models.ForeignKey(Unit, null=True, blank=True, on_delete=models.SET_NULL, related_name='master_entries')
     tenant_name = models.CharField(max_length=255, blank=True)
     amount_paid = models.DecimalField(max_digits=12, decimal_places=2, default=0)

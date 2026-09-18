@@ -34,14 +34,15 @@ class ConfirmationForm(forms.Form):
     confirmation_comment = forms.CharField(
         widget=forms.Textarea(attrs={'rows': 3}),
         max_length=200,
-        required=True,
+        required=False,
         label='Manager comment',
-        help_text='Add the manager note before submitting the confirmation.',
+        help_text='Optional manager note.',
     )
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        current_year = datetime.now().year
+        current_date = datetime.now()
+        current_year = current_date.year
+        current_month = current_date.strftime('%B').lower()
         year_choices = [('', 'Select year')] + [(str(y), str(y)) for y in range(current_year - 2, current_year + 3)]
         submitted_indexes = {
             int(match.group(1))
@@ -51,7 +52,7 @@ class ConfirmationForm(forms.Form):
         self.allocation_indexes = sorted(submitted_indexes or {1})
         self.allocation_rows = []
         for index in self.allocation_indexes:
-            self._add_allocation_fields(index, year_choices)
+            self._add_allocation_fields(index, year_choices, current_month, current_year)
             self.allocation_rows.append({
                 'index': index,
                 'unit': self[f'allocation_unit_{index}'],
@@ -61,17 +62,24 @@ class ConfirmationForm(forms.Form):
                 'year': self[f'allocation_year_{index}'],
             })
 
-    def _add_allocation_fields(self, index, year_choices):
+    def _add_allocation_fields(self, index, year_choices, current_month, current_year):
         self.fields[f'allocation_unit_{index}'] = forms.ModelChoiceField(
-            queryset=Unit.objects.filter(is_active=True).order_by('unit_id'),
+            queryset=Unit.objects.filter(is_active=True).select_related('property').order_by('property__name', 'unit_id'),
             required=False,
             empty_label='Select unit',
             label='Unit',
         )
+        self.fields[f'allocation_unit_{index}'].label_from_instance = lambda unit: (
+            f'{unit.property.name} — {unit.unit_id}' if unit.property else unit.unit_id
+        )
         self.fields[f'allocation_amount_{index}'] = forms.DecimalField(max_digits=12, decimal_places=2, min_value=0, required=False, label='Amount')
         self.fields[f'allocation_tag_{index}'] = forms.ChoiceField(choices=self.ALLOCATION_TAG_CHOICES, required=False, label='Tag')
-        self.fields[f'allocation_month_{index}'] = forms.ChoiceField(choices=self.MONTH_CHOICES, required=False, label='Month')
-        self.fields[f'allocation_year_{index}'] = forms.ChoiceField(choices=year_choices, required=False, label='Year')
+        self.fields[f'allocation_month_{index}'] = forms.ChoiceField(
+            choices=self.MONTH_CHOICES, initial=current_month, required=False, label='Month',
+        )
+        self.fields[f'allocation_year_{index}'] = forms.ChoiceField(
+            choices=year_choices, initial=str(current_year), required=False, label='Year',
+        )
 
     def get_allocation_rows(self):
         rows = []
@@ -103,3 +111,13 @@ class ConfirmationForm(forms.Form):
                 'year': int(year) if year else None,
             })
         return rows
+
+
+class RejectionForm(forms.Form):
+    rejection_comment = forms.CharField(
+        widget=forms.Textarea(attrs={'rows': 3}),
+        max_length=500,
+        required=True,
+        label='Rejection comment',
+        help_text='Explain what the manager needs to correct before resubmitting.',
+    )

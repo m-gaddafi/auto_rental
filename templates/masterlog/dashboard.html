@@ -22,6 +22,16 @@
       </div>
     </div>
   </div>
+  <div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card border-dark">
+      <div class="card-body">
+        <h5 class="card-title">Rejected confirmations</h5>
+        <p class="display-6">{{ pending_count }}</p>
+        <a href="{% url 'pending_confirmations' %}" class="btn btn-dark btn-sm">Open queue</a>
+      </div>
+    </div>
+  </div>
   <div class="col-md-4">
     <div class="card border-success">
       <div class="card-body">
@@ -38,7 +48,7 @@
   <div class="card-body">
     <a href="{% url 'units_dashboard' %}" class="btn btn-outline-dark me-2">Units</a>
     <a href="{% url 'ingest_payments' %}" class="btn btn-dark me-2">Paste payment</a>
-    {% if user.is_authenticated and user.is_superuser or user.is_authenticated and user.is_staff or user.is_authenticated and user.role == 'admin' %}
+    {% if user.is_authenticated and user.is_superuser or user.is_authenticated and user.is_staff or user.is_authenticated and user.role == 'admin' or user.can_verify_payments %}
       <a href="{% url 'pending_verifications' %}" class="btn btn-outline-secondary me-2">Pending verifications ({{ pending_verifications }})</a>
     {% endif %}
   </div>
@@ -50,9 +60,8 @@
       <thead>
         <tr>
           <th>Unit</th>
-          <th>Tenant</th>
           <th>Rate</th>
-          <th>Paid</th>
+          <th>Amount paid</th>
           <th>Balance</th>
         </tr>
       </thead>
@@ -60,16 +69,47 @@
         {% for unit in units %}
         <tr>
           <td>{{ unit.unit_id }}</td>
-          <td>{{ unit.tenant_name|default:'-' }}</td>
           <td>UGX {{ unit.monthly_rate }}</td>
           <td>UGX {{ unit.total_paid }}</td>
           <td>UGX {{ unit.current_balance }}</td>
         </tr>
         {% empty %}
-        <tr><td colspan="5">No active units yet.</td></tr>
+        <tr><td colspan="4">No active units yet.</td></tr>
         {% endfor %}
       </tbody>
     </table>
+  </div>
+</div>
+
+<div class="card mb-4 border-danger">
+  <div class="card-header bg-danger text-white">Rejected confirmations</div>
+  <div class="card-body p-0">
+    {% if rejected_confirmations %}
+    <div class="table-responsive">
+      <table class="table table-sm mb-0">
+        <thead>
+          <tr>
+            <th>Transaction</th>
+            <th>Amount</th>
+            <th>Reason</th>
+            <th>Rejected by</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for confirmation in rejected_confirmations %}
+          <tr>
+            <td>{{ confirmation.payment.transaction_id }}</td>
+            <td>UGX {{ confirmation.payment.amount }}</td>
+            <td>{{ confirmation.rejection_comment|default:'No comment provided.' }}</td>
+            <td>{{ confirmation.verified_by|default:'-' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="p-3 mb-0">No rejected confirmations.</p>
+    {% endif %}
   </div>
 </div>
 

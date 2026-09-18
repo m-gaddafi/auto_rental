@@ -25,17 +25,19 @@
     <a class="navbar-brand" href="{% url 'dashboard' %}">Rental Payments</a>
     <div class="navbar-nav ms-auto">
       <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
-      {% if not user.role == 'manager' %}
+      {% if user.is_superuser or user.is_staff or user.role == 'admin' or user.can_paste_payments %}
         <a class="nav-link" href="{% url 'ingest_payments' %}">Paste Payments</a>
       {% endif %}
       <a class="nav-link" href="{% url 'pending_confirmations' %}">Confirmations</a>
-      {% if user.is_authenticated and user.is_superuser or user.is_authenticated and user.is_staff or user.is_authenticated and user.role == 'admin' %}
+      {% if user.is_authenticated and user.is_superuser or user.is_authenticated and user.is_staff or user.is_authenticated and user.role == 'admin' or user.can_verify_payments %}
         <a class="nav-link" href="{% url 'pending_verifications' %}">Verifications</a>
       {% endif %}
       <a class="nav-link" href="{% url 'master_log' %}">Master Log</a>
+      <a class="nav-link" href="{% url 'units_dashboard' %}">Properties</a>
       {% if user.is_authenticated %}
         {% if user.is_superuser or user.is_staff or user.role == 'admin' %}
           <a class="nav-link" href="{% url 'create_unit' %}">Add unit</a>
+          <a class="nav-link" href="{% url 'create_property' %}">Add property</a>
           <a class="nav-link" href="{% url 'create_manager' %}">Add manager</a>
         {% endif %}
         <a class="nav-link" href="/admin/">Admin</a>

@@ -1,13 +1,26 @@
 from django import forms
 
-from .models import Unit
+from .models import Property, Unit
+
+
+class PropertyForm(forms.ModelForm):
+    class Meta:
+        model = Property
+        fields = ['name', 'is_active']
+        labels = {'name': 'Property name', 'is_active': 'Active property'}
 
 
 class UnitForm(forms.ModelForm):
+    property = forms.ModelChoiceField(
+        queryset=Property.objects.filter(is_active=True).order_by('name'),
+        label='Property',
+    )
+
     class Meta:
         model = Unit
-        fields = ['unit_id', 'tenant_name', 'tenant_phone', 'monthly_rate', 'is_active']
+        fields = ['property', 'unit_id', 'tenant_name', 'tenant_phone', 'monthly_rate', 'is_active']
         labels = {
+            'property': 'Property',
             'unit_id': 'Unit ID',
             'tenant_name': 'Tenant name',
             'tenant_phone': 'Tenant phone',

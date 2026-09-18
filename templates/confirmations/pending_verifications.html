@@ -9,9 +9,6 @@
       <th>Transaction</th>
       <th>Unit</th>
       <th>Amount</th>
-      <th>Month</th>
-      <th>Year</th>
-      <th>Tag</th>
       <th>Confirmed by</th>
       <th>Action</th>
     </tr>
@@ -20,11 +17,8 @@
     {% for confirmation in confirmations %}
     <tr>
       <td>{{ confirmation.payment.transaction_id }}</td>
-      <td>{{ confirmation.selected_unit.unit_id|default:'-' }}</td>
+      <td>{{ confirmation.confirmed_units }}</td>
       <td>UGX {{ confirmation.payment.amount }}</td>
-      <td>{{ confirmation.payment_month|default:'-' }}</td>
-      <td>{{ confirmation.payment_year|default:'-' }}</td>
-      <td>{{ confirmation.confirmation_tag }}</td>
       <td>{{ confirmation.confirmed_by }}</td>
       <td><a class="btn btn-sm btn-dark" href="{% url 'verify_confirmation' confirmation.id %}">Verify</a></td>
     </tr>

@@ -44,6 +44,7 @@ class Confirmation(models.Model):
     payment_year = models.PositiveSmallIntegerField(null=True, blank=True)
     confirmation_tag = models.CharField(max_length=50)
     confirmation_comment = models.TextField(blank=True)
+    rejection_comment = models.TextField(blank=True)
     confirmed_by = models.CharField(max_length=100, blank=True)
     confirmed_at = models.DateTimeField(auto_now_add=True)
     verification_status = models.CharField(max_length=20, choices=VERIFICATION_STATUS_CHOICES, default='pending')
@@ -54,6 +55,14 @@ class Confirmation(models.Model):
     def allocation_total(self):
         total = self.allocations.aggregate(total=Sum('amount'))['total'] or Decimal('0')
         return Decimal(total)
+
+    @property
+    def confirmed_units(self):
+        return ', '.join(
+            allocation.unit.unit_id
+            for allocation in self.allocations.all()
+            if allocation.unit
+        ) or '-'
 
     def __str__(self):
         return f'{self.payment.transaction_id} -> {self.confirmation_tag} ({self.verification_status})'

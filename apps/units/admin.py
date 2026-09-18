@@ -1,12 +1,19 @@
 from django.contrib import admin
 
-from .models import Unit
+from .models import Property, Unit
+
+
+@admin.register(Property)
+class PropertyAdmin(admin.ModelAdmin):
+    list_display = ('name', 'is_active')
+    search_fields = ('name',)
+    list_filter = ('is_active',)
 
 
 @admin.register(Unit)
 class UnitAdmin(admin.ModelAdmin):
-    list_display = ('unit_id', 'tenant_name', 'tenant_phone', 'monthly_rate', 'is_active')
-    search_fields = ('unit_id', 'tenant_name', 'tenant_phone')
+    list_display = ('property', 'unit_id', 'tenant_name', 'tenant_phone', 'monthly_rate', 'is_active')
+    search_fields = ('unit_id', 'tenant_name', 'tenant_phone', 'property__name')
     list_filter = ('is_active',)
 
     def has_add_permission(self, request):

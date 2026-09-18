@@ -46,6 +46,11 @@
 
   <div class="mb-4">
     <h5 class="mb-3">Payment allocation table</h5>
+    <div class="mb-3">
+      <label for="unit-search" class="form-label">Search units</label>
+      <input id="unit-search" type="search" class="form-control" placeholder="Type a property or unit ID, for example MSJ 10">
+      <div class="form-text">The search filters the unit dropdowns but keeps the normal dropdown selection.</div>
+    </div>
     <table class="table table-bordered align-middle">
       <thead>
         <tr>
@@ -71,7 +76,7 @@
       </tbody>
     </table>
 
-    <button type="button" id="add-allocation" class="btn btn-outline-dark btn-sm">Add allocation</button>
+    <button type="button" id="add-allocation" class="btn btn-outline-dark btn-sm">Add another amount for selected unit</button>
 
     <div class="alert alert-light border mt-3">
       <strong>Allocation total:</strong> UGX <span id="allocation-total">0</span>
@@ -115,9 +120,18 @@
     }
   }
 
+  function filterUnitOptions() {
+    const query = (document.getElementById('unit-search')?.value || '').trim().toLowerCase();
+    document.querySelectorAll('select[name^="allocation_unit_"]').forEach((select) => {
+      Array.from(select.options).forEach((option) => {
+        option.hidden = Boolean(query) && !option.text.toLowerCase().includes(query);
+      });
+    });
+  }
+
   function addAllocationRow() {
     const body = document.querySelector('.allocation-row')?.parentElement;
-    const source = document.querySelector('.allocation-row');
+    const source = document.querySelector('.allocation-row:last-child');
     if (!body || !source) return;
 
     const indexes = Array.from(document.querySelectorAll('.allocation-row')).map((row) => Number(row.dataset.index));
@@ -127,10 +141,13 @@
     row.querySelectorAll('input, select').forEach((field) => {
       field.name = field.name.replace(/_\d+$/, `_${nextIndex}`);
       field.id = field.id.replace(/_\d+$/, `_${nextIndex}`);
-      if (field.tagName === 'SELECT') field.selectedIndex = 0;
-      else field.value = '';
+      // Preserve the chosen unit and accounting period so a manager can
+      // split one payment across multiple amounts without reselecting it.
+      if (field.name.startsWith('allocation_tag_')) field.selectedIndex = 0;
+      if (field.name.startsWith('allocation_amount_')) field.value = '';
     });
     body.appendChild(row);
+    filterUnitOptions();
     updateAllocationTotal();
   }
 
@@ -143,5 +160,6 @@
   });
   document.addEventListener('DOMContentLoaded', updateAllocationTotal);
   document.addEventListener('input', updateAllocationTotal);
+  document.getElementById('unit-search').addEventListener('input', filterUnitOptions);
 </script>
 {% endblock %}

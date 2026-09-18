@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="mb-1">Review imported transactions</h2>
+<p class="text-muted">Review every transaction before saving it. Nothing has been added to the system yet.</p>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table mb-0 align-middle">
+      <thead><tr><th>Transaction ID</th><th>Date &amp; time</th><th>Sender</th><th>Phone</th><th class="text-end">Amount</th></tr></thead>
+      <tbody>
+        {% for payment in payments %}
+        <tr>
+          <td>{{ payment.transaction_id|default:'Will receive a generated ID' }}</td>
+          <td>{{ payment.payment_date|default:'-' }} {{ payment.payment_time|default:'' }}</td>
+          <td>{{ payment.sender_name|default:'-' }}</td>
+          <td>{{ payment.sender_phone|default:'-' }}</td>
+          <td class="text-end">UGX {{ payment.amount }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-body border-top d-flex gap-2">
+    <form method="post">{% csrf_token %}<input type="hidden" name="action" value="import"><button class="btn btn-success">Import {{ payments|length }} transaction{{ payments|length|pluralize }}</button></form>
+    <form method="post">{% csrf_token %}<input type="hidden" name="action" value="cancel"><button class="btn btn-outline-secondary">Cancel</button></form>
+  </div>
+</div>
+{% endblock %}

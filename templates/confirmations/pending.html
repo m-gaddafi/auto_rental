@@ -9,6 +9,9 @@
     <div>
       <strong>{{ payment.transaction_id }}</strong><br>
       {{ payment.sender_name }} • {{ payment.sender_phone }} • UGX {{ payment.amount }}
+      {% for rejection in payment.rejected_confirmations|slice:":1" %}
+      <br><span class="text-danger">Returned by Admin: {{ rejection.rejection_comment }}</span>
+      {% endfor %}
       {% if payment.matched_unit %}<br><span class="text-muted">Current suggestion: {{ payment.matched_unit.unit_id }}</span>{% endif %}
     </div>
     <a class="btn btn-outline-dark btn-sm" href="{% url 'confirm_payment' payment.id %}">Confirm</a>

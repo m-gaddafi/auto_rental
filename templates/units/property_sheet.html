@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-1">
+  <div>
+    <h2 class="mb-0">{{ property.name }} Rent Table</h2>
+    <p class="text-muted mb-0">Only units registered under {{ property.name }} are shown here.</p>
+  </div>
+  <div>
+    {% if can_add_unit %}<a class="btn btn-success" href="{% url 'create_unit' %}?property={{ property.id }}">Add {{ property.name }} unit</a>{% endif %}
+    <a class="btn btn-outline-secondary ms-2" href="{% url 'units_dashboard' %}">All properties</a>
+  </div>
+</div>
+<div class="mt-4">{% include 'includes/rent_sheet.html' %}</div>
+{% endblock %}

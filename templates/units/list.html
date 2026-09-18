@@ -1,9 +1,29 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-1">
-  <h2 class="mb-0">Unit Details</h2>
-  {% if can_add_unit %}<a class="btn btn-success" href="{% url 'create_unit' %}">Add unit</a>{% endif %}
+  <h2 class="mb-0">Properties &amp; Units</h2>
+  {% if can_add_unit %}
+    <a class="btn btn-outline-dark me-2" href="{% url 'create_property' %}">Add property</a>
+    <a class="btn btn-success" href="{% url 'create_unit' %}">Add unit</a>
+  {% endif %}
 </div>
-<p class="text-muted">Monthly rental collection sheet for {{ sheet.year }}.</p>
+<p class="text-muted">Each property has its own units. A new unit is automatically included in every month of the {{ sheet.year }} accounting sheet.</p>
+<div class="row g-3 mb-4">
+  {% for property in properties %}
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>{{ property.name }}</strong>
+        <a href="{% url 'property_rent_sheet' property.id %}" class="btn btn-sm btn-dark">Open table</a>
+      </div>
+      <ul class="list-group list-group-flush">
+        {% for unit in property.units.all %}
+          <li class="list-group-item d-flex justify-content-between"><span>{{ unit.unit_id }}</span><span>UGX {{ unit.monthly_rate }}</span></li>
+        {% empty %}<li class="list-group-item text-muted">No units yet.</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% empty %}<p class="text-muted">No properties have been added yet.</p>{% endfor %}
+</div>
 {% include 'includes/rent_sheet.html' %}
 {% endblock %}

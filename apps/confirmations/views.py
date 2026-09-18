@@ -1,12 +1,15 @@
-from datetime import datetime
 from decimal import Decimal
 
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db import transaction
+from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.timezone import now
 
-from apps.confirmations.forms import ConfirmationForm
+from accounts.permissions import can_verify_payments
+from apps.confirmations.forms import ConfirmationForm, RejectionForm
 from apps.confirmations.models import Confirmation, PaymentAllocation
-from apps.masterlog.models import MasterLogEntry
+from apps.masterlog.services import sync_master_log
 from apps.payments.models import RawPayment
 from apps.units.models import Unit
 
@@ -16,13 +19,16 @@ def is_manager_or_admin(user):
 
 
 def is_admin_only(user):
-    return user.is_authenticated and (user.is_superuser or user.is_staff or getattr(user, 'role', '') == 'admin')
+    return can_verify_payments(user)
 
 
 @login_required
 @user_passes_test(is_manager_or_admin)
 def pending_confirmations(request):
-    payments = RawPayment.objects.filter(status='manual').order_by('-created_at')
+    rejected_confirmations = Confirmation.objects.filter(verification_status='rejected').order_by('-verified_at')
+    payments = RawPayment.objects.filter(status='manual').prefetch_related(
+        Prefetch('confirmations', queryset=rejected_confirmations, to_attr='rejected_confirmations')
+    ).order_by('-created_at')
     return render(request, 'confirmations/pending.html', {'payments': payments, 'form': ConfirmationForm()})
 
 
@@ -88,33 +94,31 @@ def verify_confirmation(request, confirmation_id):
     if request.method == 'POST':
         action = request.POST.get('action')
         if action == 'verify':
-            confirmation.verification_status = 'verified'
-            confirmation.verified_by = request.user.username
-            confirmation.verified_at = datetime.now()
-            confirmation.save(update_fields=['verification_status', 'verified_by', 'verified_at'])
-            payment = confirmation.payment
-            payment.status = 'confirmed'
-            payment.save(update_fields=['status'])
-            MasterLogEntry.objects.update_or_create(
-                payment=payment,
-                defaults={
-                    'unit': confirmation.selected_unit,
-                    'tenant_name': payment.sender_name,
-                    'amount_paid': payment.amount,
-                    'status': 'verified',
-                    'payment_status': confirmation.payment_status,
-                    'payment_month': confirmation.payment_month,
-                    'payment_year': confirmation.payment_year,
-                    'confirmation_tag': confirmation.confirmation_tag,
-                    'confirmation_comment': confirmation.confirmation_comment,
-                },
-            )
+            with transaction.atomic():
+                confirmation.verification_status = 'verified'
+                confirmation.verified_by = request.user.username
+                confirmation.verified_at = now()
+                confirmation.save(update_fields=['verification_status', 'verified_by', 'verified_at'])
+                payment = confirmation.payment
+                payment.status = 'confirmed'
+                payment.save(update_fields=['status'])
+                sync_master_log(confirmation)
         elif action == 'reject':
+            rejection_form = RejectionForm(request.POST)
+            if not rejection_form.is_valid():
+                return render(request, 'confirmations/verify.html', {
+                    'confirmation': confirmation,
+                    'rejection_form': rejection_form,
+                })
             confirmation.verification_status = 'rejected'
+            confirmation.rejection_comment = rejection_form.cleaned_data['rejection_comment'].strip()
             confirmation.verified_by = request.user.username
-            confirmation.verified_at = datetime.now()
-            confirmation.save(update_fields=['verification_status', 'verified_by', 'verified_at'])
+            confirmation.verified_at = now()
+            confirmation.save(update_fields=['verification_status', 'rejection_comment', 'verified_by', 'verified_at'])
             confirmation.payment.status = 'manual'
             confirmation.payment.save(update_fields=['status'])
         return redirect('pending_verifications')
-    return render(request, 'confirmations/verify.html', {'confirmation': confirmation})
+    return render(request, 'confirmations/verify.html', {
+        'confirmation': confirmation,
+        'rejection_form': RejectionForm(),
+    })
