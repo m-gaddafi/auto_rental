@@ -16,6 +16,7 @@ DEBUG = config(
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'testserver','https://auto-rental-delta.vercel.app/','*']
 
 INSTALLED_APPS = [
+    'unfold',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
