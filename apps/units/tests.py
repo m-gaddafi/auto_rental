@@ -1,5 +1,9 @@
-from django.test import TestCase
+from decimal import Decimal
 
+from django.test import TestCase
+from django.urls import reverse
+
+from accounts.models import CustomUser
 from apps.units.forms import PropertyForm, UnitForm
 from apps.units.models import Property
 from apps.units.models import Unit
@@ -42,3 +46,22 @@ class PropertyUnitTest(TestCase):
         sheet = build_rent_sheet(2026, msj)
 
         self.assertEqual([row['unit'].unit_id for row in sheet['rows']], ['TEST-MSJ-1'])
+
+
+class DashboardTest(TestCase):
+    def test_dashboard_identifies_the_user_and_shows_collection_rate_range(self):
+        user = CustomUser.objects.create_user(username='rental-user', password='password')
+        Unit.objects.create(unit_id='LOW-RATE', monthly_rate=Decimal('100000.00'))
+        Unit.objects.create(unit_id='HIGH-RATE', monthly_rate=Decimal('999999.00'))
+
+        self.client.force_login(user)
+        response = self.client.get(reverse('dashboard'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Signed in as')
+        self.assertContains(response, 'rental-user')
+        self.assertContains(response, 'Collection rates')
+        self.assertEqual(response.context['lowest_rate'], Decimal('100000.00'))
+        self.assertEqual(response.context['highest_rate'], Decimal('999999.00'))
+        self.assertNotContains(response, 'Unit balances')
+        self.assertNotContains(response, 'Recent confirmed entries')

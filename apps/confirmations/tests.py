@@ -199,3 +199,23 @@ class PaymentAllocationTest(TestCase):
         self.assertEqual(confirmation.verification_status, 'rejected')
         self.assertEqual(confirmation.rejection_comment, 'Please correct the unit allocation.')
         self.assertEqual(payment.status, 'manual')
+
+    def test_admin_can_verify_a_payment_without_a_comment(self):
+        admin = CustomUser.objects.create_superuser(username='verify-admin', password='password')
+        payment = RawPayment.objects.create(transaction_id='TX-VERIFY-NOTELESS', amount=Decimal('5000.00'))
+        confirmation = Confirmation.objects.create(
+            payment=payment,
+            confirmation_tag='full',
+            confirmation_comment='',
+            confirmed_by='manager',
+        )
+
+        self.client.force_login(admin)
+        response = self.client.post(reverse('verify_confirmation', args=[confirmation.id]), {'action': 'verify'})
+
+        self.assertRedirects(response, reverse('pending_verifications'))
+        confirmation.refresh_from_db()
+        payment.refresh_from_db()
+        self.assertEqual(confirmation.verification_status, 'verified')
+        self.assertEqual(confirmation.confirmation_comment, '')
+        self.assertEqual(payment.status, 'confirmed')

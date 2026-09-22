@@ -35,6 +35,7 @@
       <a class="nav-link" href="{% url 'master_log' %}">Master Log</a>
       <a class="nav-link" href="{% url 'units_dashboard' %}">Properties</a>
       {% if user.is_authenticated %}
+        <span class="navbar-text text-light me-3">Signed in as {{ user.get_full_name|default:user.username }}</span>
         {% if user.is_superuser or user.is_staff or user.role == 'admin' %}
           <a class="nav-link" href="{% url 'create_unit' %}">Add unit</a>
           <a class="nav-link" href="{% url 'create_property' %}">Add property</a>

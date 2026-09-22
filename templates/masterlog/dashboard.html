@@ -1,6 +1,11 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2 class="mb-3">Classic Rental Dashboard</h2>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h2 class="mb-1">Classic Rental Dashboard</h2>
+    <p class="text-muted mb-0">Signed in as <strong>{{ user.get_full_name|default:user.username }}</strong></p>
+  </div>
+</div>
 <p class="text-muted">Review payments, confirm the unit, and track balances without leaving the spreadsheet workflow.</p>
 
 <div class="row g-3 mb-4">
@@ -22,13 +27,12 @@
       </div>
     </div>
   </div>
-  <div class="row g-3 mb-4">
   <div class="col-md-4">
     <div class="card border-dark">
       <div class="card-body">
         <h5 class="card-title">Rejected confirmations</h5>
-        <p class="display-6">{{ pending_count }}</p>
-        <a href="{% url 'pending_confirmations' %}" class="btn btn-dark btn-sm">Open queue</a>
+        <p class="display-6">{{ rejected_confirmations|length }}</p>
+        <a href="#rejected-confirmations" class="btn btn-dark btn-sm">View rejected</a>
       </div>
     </div>
   </div>
@@ -53,35 +57,27 @@
     {% endif %}
   </div>
 </div>
-<div class="card mb-4">
-  <div class="card-header bg-dark text-white">Unit balances</div>
+<div class="card mb-4 border-primary">
+  <div class="card-header bg-primary text-white">Collection rates</div>
   <div class="card-body">
-    <table class="table table-sm mb-0">
-      <thead>
-        <tr>
-          <th>Unit</th>
-          <th>Rate</th>
-          <th>Amount paid</th>
-          <th>Balance</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for unit in units %}
-        <tr>
-          <td>{{ unit.unit_id }}</td>
-          <td>UGX {{ unit.monthly_rate }}</td>
-          <td>UGX {{ unit.total_paid }}</td>
-          <td>UGX {{ unit.current_balance }}</td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="4">No active units yet.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    {% if lowest_rate is not None %}
+    <div class="row text-center">
+      <div class="col-md-6 border-end">
+        <p class="text-muted mb-1">Lowest rate</p>
+        <p class="h4 mb-0">UGX {{ lowest_rate }}</p>
+      </div>
+      <div class="col-md-6">
+        <p class="text-muted mb-1">Highest rate</p>
+        <p class="h4 mb-0">UGX {{ highest_rate }}</p>
+      </div>
+    </div>
+    {% else %}
+    <p class="mb-0 text-muted">No active unit rates available.</p>
+    {% endif %}
   </div>
 </div>
 
-<div class="card mb-4 border-danger">
+<div id="rejected-confirmations" class="card mb-4 border-danger">
   <div class="card-header bg-danger text-white">Rejected confirmations</div>
   <div class="card-body p-0">
     {% if rejected_confirmations %}
@@ -113,31 +109,4 @@
   </div>
 </div>
 
-<div class="card">
-  <div class="card-header bg-light">Recent confirmed entries</div>
-  <div class="card-body">
-    <table class="table table-sm mb-0">
-      <thead>
-        <tr>
-          <th>Transaction</th>
-          <th>Unit</th>
-          <th>Amount</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for entry in entries %}
-        <tr>
-          <td>{{ entry.payment.transaction_id }}</td>
-          <td>{{ entry.unit.unit_id|default:'-' }}</td>
-          <td>UGX {{ entry.amount_paid }}</td>
-          <td>{{ entry.payment_status }}</td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="4">No confirmed payments yet.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</div>
 {% endblock %}

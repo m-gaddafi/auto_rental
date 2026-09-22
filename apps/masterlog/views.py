@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
+from django.db.models import Max, Min, Q
 from django.shortcuts import render
 from django.utils.timezone import now
 
@@ -36,7 +36,6 @@ def master_log(request):
 
 @login_required
 def dashboard(request):
-    entries = MasterLogEntry.objects.select_related('payment', 'unit').order_by('-created_at')[:10]
     pending_count = RawPayment.objects.filter(status='manual').count()
     verified_count = MasterLogEntry.objects.filter(status='verified').count()
     unit_count = Unit.objects.filter(is_active=True).count()
@@ -46,13 +45,16 @@ def dashboard(request):
     ).select_related('payment').order_by('-verified_at')[:10]
     if request.user.is_authenticated and (request.user.is_superuser or request.user.is_staff or getattr(request.user, 'role', '') == 'admin'):
         pending_verifications = Confirmation.objects.filter(verification_status='pending').count()
-    units = Unit.objects.filter(is_active=True).order_by('unit_id')
+    rate_range = Unit.objects.filter(is_active=True).aggregate(
+        lowest_rate=Min('monthly_rate'),
+        highest_rate=Max('monthly_rate'),
+    )
     return render(request, 'masterlog/dashboard.html', {
-        'entries': entries,
         'pending_count': pending_count,
         'confirmed_count': verified_count,
         'unit_count': unit_count,
         'pending_verifications': pending_verifications,
         'rejected_confirmations': rejected_confirmations,
-        'units': units,
+        'lowest_rate': rate_range['lowest_rate'],
+        'highest_rate': rate_range['highest_rate'],
     })
