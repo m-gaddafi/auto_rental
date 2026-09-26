@@ -30,6 +30,27 @@ class PaymentImportTest(TestCase):
         self.assertEqual(payments[0]['amount'], Decimal('1050000'))
         self.assertEqual(payments[0]['payment_time'].strftime('%H:%M:%S'), '10:25:06')
 
+
+    def test_bkgen_word_export_imports_receipt_rows(self):
+        xml = '''<?xml version="1.0" encoding="UTF-8"?>
+        <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>
+        <w:tbl>
+          <w:tr><w:tc><w:p><w:r><w:t>Id</w:t></w:r></w:p></w:tc><w:tc><w:p><w:r><w:t>Date</w:t></w:r></w:p></w:tc><w:tc><w:p><w:r><w:t>From handler name</w:t></w:r></w:p></w:tc><w:tc><w:p><w:r><w:t>To handler name</w:t></w:r></w:p></w:tc><w:tc><w:p><w:r><w:t>Amount</w:t></w:r></w:p></w:tc><w:tc><w:p><w:r><w:t>Balance</w:t></w:r></w:p></w:tc></w:tr>
+          <w:tr><w:tc><w:p><w:r><w:t>42489419123</w:t></w:r></w:p></w:tc><w:tc><w:p><w:r><w:t>08/02/2026, 17:17:18</w:t></w:r></w:p></w:tc><w:tc><w:p><w:r><w:t>BETTY KABUWO</w:t></w:r></w:p></w:tc><w:tc><w:p><w:r><w:t>BK GENERAL SERVICES</w:t></w:r></w:p></w:tc><w:tc><w:p><w:r><w:t>UGX 250,000</w:t></w:r></w:p></w:tc><w:tc><w:p><w:r><w:t>UGX 2,068,691</w:t></w:r></w:p></w:tc></w:tr>
+        </w:tbl></w:body></w:document>'''
+        output = BytesIO()
+        with ZipFile(output, 'w', ZIP_DEFLATED) as archive:
+            archive.writestr('word/document.xml', xml)
+
+        payments = parse_uploaded_payments(SimpleUploadedFile('bkgen.docx', output.getvalue()))
+
+        self.assertEqual(len(payments), 1)
+        self.assertEqual(payments[0]['transaction_id'], '42489419123')
+        self.assertEqual(payments[0]['payment_date'].isoformat(), '2026-08-02')
+        self.assertEqual(payments[0]['payment_time'].strftime('%H:%M:%S'), '17:17:18')
+        self.assertEqual(payments[0]['sender_name'], 'BETTY KABUWO')
+        self.assertEqual(payments[0]['amount'], Decimal('250000'))
+
     def test_excel_import_returns_one_payment_per_transaction_row(self):
         from openpyxl import Workbook
 

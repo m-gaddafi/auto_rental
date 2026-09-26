@@ -29,6 +29,7 @@ def master_log(request):
         search_results = search_results.none()
     return render(request, 'masterlog/master_log.html', {
         'sheet': build_rent_sheet(year),
+        'hide_property_column': True,
         'query': query,
         'search_results': search_results[:50],
     })

@@ -17,6 +17,13 @@
         .rent-sheet .not-paid { background: #f4f5f5; color: #888; }
         .rent-sheet .summary-row th { background: #6f2519; }
         .rent-sheet .summary-row td { background: #e7f0f2; font-weight: 600; }
+        .rent-sheet--frozen thead tr > :nth-child(-n+2),
+        .rent-sheet--frozen tbody tr > :nth-child(-n+2) { position: sticky; background: #fff; z-index: 2; }
+        .rent-sheet--frozen thead tr > :nth-child(-n+2) { background: #6f2519; color: #fff; z-index: 4; }
+        .rent-sheet--frozen thead tr > :first-child,
+        .rent-sheet--frozen tbody tr > :first-child { left: 0; min-width: 140px; }
+        .rent-sheet--frozen thead tr > :nth-child(2),
+        .rent-sheet--frozen tbody tr > :nth-child(2) { left: 140px; min-width: 130px; }
     </style>
 </head>
 <body>

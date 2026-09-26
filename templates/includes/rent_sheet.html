@@ -1,11 +1,13 @@
 <div class="table-responsive">
-  <table class="table table-bordered rent-sheet align-middle text-center">
+  <table class="table table-bordered rent-sheet align-middle text-center{% if hide_property_column or sheet.property %} rent-sheet--frozen{% endif %}">
     <thead>
       <tr>
         {% if sheet.property %}
           <th class="text-start">{{ sheet.property.name }} / Unit</th>
-        {% else %}
+        {% elif not hide_property_column %}
           <th class="text-start">Property</th>
+          <th class="text-start">Unit ID</th>
+        {% else %}
           <th class="text-start">Unit ID</th>
         {% endif %}
         <th class="text-end">Rate</th>
@@ -15,17 +17,17 @@
     <tbody>
       {% for row in sheet.rows %}
       <tr>
-        {% if not sheet.property %}<td class="text-start">{{ row.unit.property|default:'-' }}</td>{% endif %}
+        {% if not sheet.property and not hide_property_column %}<td class="text-start">{{ row.unit.property|default:'-' }}</td>{% endif %}
         <th class="text-start">{{ row.unit.unit_id }}</th>
         <td class="text-end">UGX {{ row.unit.monthly_rate }}</td>
         {% for cell in row.cells %}<td class="{{ cell.state }}">{% if cell.amount %}UGX {{ cell.amount }}{% else %}-{% endif %}</td>{% endfor %}
       </tr>
-      {% empty %}<tr><td colspan="{% if sheet.property %}{{ sheet.months|length|add:2 }}{% else %}{{ sheet.months|length|add:3 }}{% endif %}">No unit data available.</td></tr>{% endfor %}
+      {% empty %}<tr><td colspan="{% if sheet.property or hide_property_column %}{{ sheet.months|length|add:2 }}{% else %}{{ sheet.months|length|add:3 }}{% endif %}">No unit data available.</td></tr>{% endfor %}
     </tbody>
     <tfoot>
-      <tr class="summary-row"><th class="text-start" colspan="{% if sheet.property %}2{% else %}3{% endif %}">Maximum possible</th>{% for total in sheet.monthly_totals %}<td>UGX {{ sheet.maximum_possible }}</td>{% endfor %}</tr>
-      <tr class="summary-row"><th class="text-start" colspan="{% if sheet.property %}2{% else %}3{% endif %}">Low rent collections</th>{% for total in sheet.monthly_totals %}<td>UGX {{ total }}</td>{% endfor %}</tr>
-      <tr class="summary-row"><th class="text-start" colspan="{% if sheet.property %}2{% else %}3{% endif %}">Recovery</th>{% for percent in sheet.recovery %}<td>{{ percent|floatformat:2 }}%</td>{% endfor %}</tr>
+      <tr class="summary-row"><th class="text-start" colspan="{% if sheet.property or hide_property_column %}2{% else %}3{% endif %}">Maximum possible</th>{% for total in sheet.monthly_totals %}<td>UGX {{ sheet.maximum_possible }}</td>{% endfor %}</tr>
+      <tr class="summary-row"><th class="text-start" colspan="{% if sheet.property or hide_property_column %}2{% else %}3{% endif %}">Low rent collections</th>{% for total in sheet.monthly_totals %}<td>UGX {{ total }}</td>{% endfor %}</tr>
+      <tr class="summary-row"><th class="text-start" colspan="{% if sheet.property or hide_property_column %}2{% else %}3{% endif %}">Recovery</th>{% for percent in sheet.recovery %}<td>{{ percent|floatformat:2 }}%</td>{% endfor %}</tr>
     </tfoot>
   </table>
 </div>
