@@ -51,7 +51,7 @@
   <div class="card-header bg-light">Quick actions</div>
   <div class="card-body">
     <a href="{% url 'units_dashboard' %}" class="btn btn-outline-dark me-2">Units</a>
-    <a href="{% url 'ingest_payments' %}" class="btn btn-dark me-2">Paste payment</a>
+    <a href="{% url 'ingest_payments' %}" class="btn btn-dark me-2">Import receipts</a>
     {% if user.is_authenticated and user.is_superuser or user.is_authenticated and user.is_staff or user.is_authenticated and user.role == 'admin' or user.can_verify_payments %}
       <a href="{% url 'pending_verifications' %}" class="btn btn-outline-secondary me-2">Pending verifications ({{ pending_verifications }})</a>
     {% endif %}

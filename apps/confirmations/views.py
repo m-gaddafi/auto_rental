@@ -28,7 +28,7 @@ def pending_confirmations(request):
     rejected_confirmations = Confirmation.objects.filter(verification_status='rejected').order_by('-verified_at')
     payments = RawPayment.objects.filter(status='manual').prefetch_related(
         Prefetch('confirmations', queryset=rejected_confirmations, to_attr='rejected_confirmations')
-    ).order_by('-created_at')
+    ).order_by('-payment_date', '-payment_time', '-created_at')
     return render(request, 'confirmations/pending.html', {'payments': payments, 'form': ConfirmationForm()})
 
 

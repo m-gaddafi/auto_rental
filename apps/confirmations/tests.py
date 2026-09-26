@@ -9,6 +9,7 @@ from apps.confirmations.models import Confirmation, PaymentAllocation
 from apps.masterlog.models import MasterLogEntry
 from apps.masterlog.services import sync_master_log
 from apps.payments.models import RawPayment
+from apps.payments.utils import parse_single_mtn_text
 from apps.units.models import Unit
 from accounts.models import CustomUser
 
@@ -219,3 +220,17 @@ class PaymentAllocationTest(TestCase):
         self.assertEqual(confirmation.verification_status, 'verified')
         self.assertEqual(confirmation.confirmation_comment, '')
         self.assertEqual(payment.status, 'confirmed')
+
+    def test_parse_single_mtn_text_supports_mm_dd_yy_dates(self):
+        data = parse_single_mtn_text(
+            'TxnID: TX-123\n'
+            'Date: 08-05-26\n'
+            'Time: 15:20\n'
+            'From: Jane Doe\n'
+            'Tel: +256700000000\n'
+            'Amount: UGX 500000'
+        )
+
+        self.assertEqual(data['payment_date'].isoformat(), '2026-08-05')
+        self.assertEqual(data['payment_time'].isoformat(), '15:20:00')
+        self.assertEqual(data['amount'], Decimal('500000'))

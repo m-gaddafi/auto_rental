@@ -2,6 +2,9 @@ import uuid
 from datetime import date, time
 from decimal import Decimal, InvalidOperation
 
+from datetime import datetime
+
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import redirect, render
 
@@ -34,6 +37,17 @@ def _deserialise_payment(parsed):
     }
 
 
+def _session_payment_sort_key(serialised):
+    payment_date = serialised.get('payment_date')
+    payment_time = serialised.get('payment_time') or '00:00:00'
+    if payment_date and payment_time:
+        try:
+            return datetime.fromisoformat(f'{payment_date}T{payment_time}')
+        except ValueError:
+            pass
+    return datetime.min
+
+
 @login_required
 @user_passes_test(can_paste_payments)
 def ingest_payments(request):
@@ -64,11 +78,14 @@ def review_payments(request):
     if not preview:
         return redirect('ingest_payments')
 
+    preview = sorted(preview, key=_session_payment_sort_key, reverse=True)
+
     if request.method == 'POST':
         if request.POST.get('action') == 'cancel':
             request.session.pop(PREVIEW_SESSION_KEY, None)
             return redirect('ingest_payments')
 
+        imported_count = 0
         for serialised in preview:
             parsed = _deserialise_payment(serialised)
             transaction_id = parsed['transaction_id'] or f'manual-{uuid.uuid4().hex[:8]}'
@@ -85,6 +102,7 @@ def review_payments(request):
                 raw_text=parsed['raw_text'],
                 status='manual',
             )
+            imported_count += 1
             suggested_unit = None
             if payment.sender_phone:
                 suggested_unit = Unit.objects.filter(tenant_phone=payment.sender_phone, is_active=True).first()
@@ -94,6 +112,7 @@ def review_payments(request):
                 payment.matched_unit = suggested_unit
                 payment.save(update_fields=['matched_unit'])
         request.session.pop(PREVIEW_SESSION_KEY, None)
+        messages.success(request, f'Successfully imported {imported_count} receipt{"s" if imported_count != 1 else ""}.')
         return redirect('pending_confirmations')
 
     return render(request, 'payments/review.html', {'payments': preview})

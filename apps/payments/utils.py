@@ -54,7 +54,14 @@ def _parse_spreadsheet_row(headers, values):
 
 def _parse_date_time(value):
     value = value.strip().replace('\xa0', ' ')
-    for date_format in ('%d/%m/%Y, %H:%M:%S', '%d/%m/%Y %H:%M:%S', '%d/%m/%Y, %H:%M', '%d/%m/%Y %H:%M'):
+    for date_format in (
+        '%m-%d-%y %H:%M:%S', '%m-%d-%Y %H:%M:%S', '%m-%d-%y %H:%M', '%m-%d-%Y %H:%M',
+        '%m/%d/%y %H:%M:%S', '%m/%d/%Y %H:%M:%S', '%m/%d/%y %H:%M', '%m/%d/%Y %H:%M',
+        '%m-%d-%y, %H:%M:%S', '%m-%d-%Y, %H:%M:%S', '%m-%d-%y, %H:%M', '%m-%d-%Y, %H:%M',
+        '%m/%d/%y, %H:%M:%S', '%m/%d/%Y, %H:%M:%S', '%m/%d/%y, %H:%M', '%m/%d/%Y, %H:%M',
+        '%d/%m/%Y, %H:%M:%S', '%d/%m/%Y %H:%M:%S', '%d/%m/%Y, %H:%M', '%d/%m/%Y %H:%M',
+        '%d-%m-%Y %H:%M:%S', '%d-%m-%Y %H:%M',
+    ):
         try:
             return datetime.strptime(value, date_format)
         except ValueError:
@@ -122,9 +129,15 @@ def parse_single_mtn_text(text: str):
     if txn_match:
         data['transaction_id'] = txn_match.group(1).strip()
 
-    date_match = re.search(r'Date:\s*(\d{2}/\d{2}/\d{4})', text)
+    date_match = re.search(r'Date:\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})', text)
     if date_match:
-        data['payment_date'] = datetime.strptime(date_match.group(1), '%d/%m/%Y').date()
+        date_value = date_match.group(1)
+        for date_format in ('%m-%d-%y', '%m-%d-%Y', '%m/%d/%y', '%m/%d/%Y', '%d/%m/%Y', '%d-%m-%Y', '%d/%m/%y', '%d-%m-%y'):
+            try:
+                data['payment_date'] = datetime.strptime(date_value, date_format).date()
+                break
+            except ValueError:
+                continue
 
     time_match = re.search(r'Time:\s*(\d{1,2}:\d{2})', text)
     if time_match:

@@ -23,24 +23,44 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container">
     <a class="navbar-brand" href="{% url 'dashboard' %}">Rental Payments</a>
-    <div class="navbar-nav ms-auto">
+    <div class="navbar-nav ms-auto align-items-center">
       <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
       {% if user.is_superuser or user.is_staff or user.role == 'admin' or user.can_paste_payments %}
-        <a class="nav-link" href="{% url 'ingest_payments' %}">Paste Payments</a>
+        <a class="nav-link" href="{% url 'ingest_payments' %}">Import Receipts</a>
       {% endif %}
-      <a class="nav-link" href="{% url 'pending_confirmations' %}">Confirmations</a>
+      <a class="nav-link" href="{% url 'pending_confirmations' %}">Payment Locations</a>
       {% if user.is_authenticated and user.is_superuser or user.is_authenticated and user.is_staff or user.is_authenticated and user.role == 'admin' or user.can_verify_payments %}
         <a class="nav-link" href="{% url 'pending_verifications' %}">Verifications</a>
       {% endif %}
       <a class="nav-link" href="{% url 'master_log' %}">Master Log</a>
-      <a class="nav-link" href="{% url 'units_dashboard' %}">Properties</a>
+
       {% if user.is_authenticated %}
-        <span class="navbar-text text-light me-3">Signed in as {{ user.get_full_name|default:user.username }}</span>
         {% if user.is_superuser or user.is_staff or user.role == 'admin' %}
-          <a class="nav-link" href="{% url 'create_unit' %}">Add unit</a>
-          <a class="nav-link" href="{% url 'create_property' %}">Add property</a>
-          <a class="nav-link" href="{% url 'create_manager' %}">Add manager</a>
+        <div class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="setupDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Set up
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="setupDropdown">
+            <li><a class="dropdown-item" href="{% url 'create_property' %}">Add property</a></li>
+            <li><a class="dropdown-item" href="{% url 'create_manager' %}">Add users</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><h6 class="dropdown-header">View</h6></li>
+            <li><a class="dropdown-item" href="{% url 'units_dashboard' %}">View units</a></li>
+            <li><a class="dropdown-item" href="/admin/accounts/customuser/">View users</a></li>
+            <li><a class="dropdown-item" href="{% url 'units_dashboard' %}">Property units</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><h6 class="dropdown-header">Modify</h6></li>
+            <li><a class="dropdown-item" href="{% url 'create_unit' %}">Add unit</a></li>
+            <li><a class="dropdown-item" href="/admin/units/unit/">Delete unit</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><h6 class="dropdown-header">Delete</h6></li>
+            <li><a class="dropdown-item" href="/admin/accounts/customuser/">Delete user</a></li>
+            <li><a class="dropdown-item" href="/admin/units/property/">Delete property</a></li>
+          </ul>
+        </div>
         {% endif %}
+
+        <span class="navbar-text text-light me-3">Signed in as {{ user.get_full_name|default:user.username }}</span>
         <a class="nav-link" href="/admin/">Admin</a>
         <a class="nav-link" href="{% url 'logout' %}">Logout</a>
       {% else %}
@@ -50,7 +70,15 @@
   </div>
 </nav>
 <div class="container py-4">
+    {% if messages %}
+      <div class="mb-3">
+        {% for message in messages %}
+          <div class="alert alert-success" role="alert">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
     {% block content %}{% endblock %}
 </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
