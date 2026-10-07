@@ -11,16 +11,12 @@ class ManagerPermissionTest(TestCase):
             'username': 'payments-manager',
             'email': 'manager@example.com',
             'password': 'strong-password',
-            'can_paste_payments': 'on',
-            'can_verify_payments': 'on',
         })
 
         self.assertTrue(form.is_valid())
         manager = form.save()
 
         self.assertEqual(manager.role, 'manager')
-        self.assertTrue(manager.can_paste_payments)
-        self.assertTrue(manager.can_verify_payments)
 
 
 class LoginRedirectTest(TestCase):

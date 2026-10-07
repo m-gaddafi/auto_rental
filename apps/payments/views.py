@@ -8,7 +8,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import redirect, render
 
-from accounts.permissions import can_paste_payments
+def can_paste_payments(user):
+    return user.is_authenticated and getattr(user, 'role', '') in ('admin', 'manager')
 from apps.units.models import Unit
 from .forms import PaymentIngestForm
 from .models import RawPayment

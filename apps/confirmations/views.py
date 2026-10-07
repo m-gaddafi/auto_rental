@@ -6,7 +6,7 @@ from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.timezone import now
 
-from accounts.permissions import can_verify_payments
+from accounts.permissions import is_admin
 from apps.confirmations.forms import ConfirmationForm, RejectionForm
 from apps.confirmations.models import Confirmation, PaymentAllocation
 from apps.masterlog.services import sync_master_log
@@ -19,7 +19,7 @@ def is_manager_or_admin(user):
 
 
 def is_admin_only(user):
-    return can_verify_payments(user)
+    return is_admin(user)
 
 
 @login_required
