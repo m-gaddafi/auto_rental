@@ -195,7 +195,7 @@ export default function RentSheetView({ properties }) {
             <thead>
               <tr>
                 <th className="sticky-col" style={{ width: 140 }}>Unit ID</th>
-                <th className="sticky-col-2" style={{ width: 180 }}>Tenant & Rate</th>
+                <th className="sticky-col-2" style={{ width: 140 }}>Monthly Rate</th>
                 {sheet.months.map(([key, label]) => (
                   <th key={key} style={{ minWidth: 105, textTransform: 'capitalize' }}>
                     {label.substring(0, 3)}
@@ -223,11 +223,8 @@ export default function RentSheetView({ properties }) {
                       </div>
                     </td>
 
-                    {/* Tenant & Rate Sticky */}
+                    {/* Monthly Rate Sticky */}
                     <td className="sticky-col-2">
-                      <div style={{ fontWeight: 600, color: '#cbd5e1', fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 170 }}>
-                        {row.unit.tenant_name || 'Vacant / Unassigned'}
-                      </div>
                       <div style={{ fontSize: '0.75rem', color: '#818cf8', fontFamily: 'var(--font-mono)' }}>
                         UGX {formatMoney(row.unit.monthly_rate)}/mo
                       </div>
