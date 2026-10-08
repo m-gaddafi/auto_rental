@@ -7,14 +7,14 @@ import {
   CheckCircle2,
   ShieldCheck,
   BookOpenCheck,
-  PlusCircle,
   LogIn,
   LogOut,
   ExternalLink,
   UserCheck,
   Sparkles,
   Shield,
-  Settings
+  Settings,
+  X
 } from 'lucide-react';
 
 export default function Sidebar({
@@ -24,9 +24,9 @@ export default function Sidebar({
   currentUser,
   onOpenLogin,
   onLogout,
-  onOpenAddUnit,
-  onOpenAddProperty,
-  onOpenSetup
+  onOpenSetup,
+  isOpen,
+  onClose
 }) {
   const pendingCount = stats?.pending_count || 0;
   const pendingVerifications = stats?.pending_verifications || 0;
@@ -56,58 +56,93 @@ export default function Sidebar({
     { id: 'masterlog', label: 'Master Log', icon: BookOpenCheck },
   ];
 
+  const handleNavClick = (id) => {
+    setActiveTab(id);
+    if (onClose) onClose();
+  };
+
   return (
-    <aside style={{
-      width: 270,
-      minWidth: 270,
-      background: 'rgba(11, 16, 28, 0.96)',
-      backdropFilter: 'blur(20px)',
-      borderRight: '1px solid var(--border-subtle)',
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100vh',
-      position: 'sticky',
-      top: 0,
-      zIndex: 40,
-      overflowY: 'auto'
-    }}>
+    <aside
+      className={`sidebar-drawer ${isOpen ? 'open' : ''}`}
+      style={{
+        width: 270,
+        minWidth: 270,
+        background: 'rgba(11, 16, 28, 0.98)',
+        backdropFilter: 'blur(20px)',
+        borderRight: '1px solid var(--border-subtle)',
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        position: 'sticky',
+        top: 0,
+        zIndex: 40,
+        overflowY: 'auto'
+      }}
+    >
       {/* Brand Header */}
       <div style={{
-        padding: '24px 20px',
+        padding: '20px 18px',
         borderBottom: '1px solid var(--border-subtle)',
         display: 'flex',
         alignItems: 'center',
+        justifyContent: 'space-between',
         gap: 12
       }}>
-        <div style={{
-          width: 42,
-          height: 42,
-          borderRadius: 'var(--radius-md)',
-          background: 'linear-gradient(135deg, #6366f1 0%, #10b981 100%)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 4px 16px rgba(99, 102, 241, 0.35)',
-          flexShrink: 0
-        }}>
-          <Building2 size={24} color="#ffffff" />
-        </div>
-        <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{
-            fontSize: '1.25rem',
-            fontWeight: 800,
-            background: 'linear-gradient(90deg, #ffffff 0%, #cbd5e1 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            letterSpacing: '-0.02em',
-            lineHeight: 1.1
+            width: 42,
+            height: 42,
+            borderRadius: 'var(--radius-md)',
+            background: 'linear-gradient(135deg, #6366f1 0%, #10b981 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 16px rgba(99, 102, 241, 0.35)',
+            flexShrink: 0
           }}>
-            AutoRental
+            <Building2 size={24} color="#ffffff" />
           </div>
-          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-            Intelligent Ledger & Rent
+          <div>
+            <div style={{
+              fontSize: '1.25rem',
+              fontWeight: 800,
+              background: 'linear-gradient(90deg, #ffffff 0%, #cbd5e1 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              letterSpacing: '-0.02em',
+              lineHeight: 1.1
+            }}>
+              AutoRental
+            </div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+              Intelligent Ledger & Rent
+            </div>
           </div>
         </div>
+
+        {/* Mobile Close Button */}
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="mobile-close-btn"
+            style={{
+              background: 'rgba(255, 255, 255, 0.06)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-md)',
+              width: 34,
+              height: 34,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--text-secondary)',
+              cursor: 'pointer',
+              padding: 0
+            }}
+            title="Close menu"
+          >
+            <X size={18} />
+          </button>
+        )}
       </div>
 
       {/* User Badge / Status Card */}
@@ -119,54 +154,66 @@ export default function Sidebar({
             border: '1px solid var(--border-subtle)',
             borderRadius: 'var(--radius-md)',
             display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            flexDirection: 'column',
             gap: 10
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, overflow: 'hidden' }}>
-              <div style={{
-                width: 32,
-                height: 32,
-                borderRadius: '50%',
-                background: isAdmin ? 'rgba(16, 185, 129, 0.2)' : 'rgba(99, 102, 241, 0.2)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0
-              }}>
-                <UserCheck size={16} color={isAdmin ? '#10b981' : '#818cf8'} />
-              </div>
-              <div style={{ overflow: 'hidden' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{
-                  fontSize: '0.85rem',
-                  fontWeight: 700,
-                  color: '#ffffff',
-                  whiteSpace: 'nowrap',
-                  textOverflow: 'ellipsis',
-                  overflow: 'hidden'
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  background: isAdmin ? 'rgba(244, 63, 94, 0.2)' : 'rgba(99, 102, 241, 0.2)',
+                  border: `1px solid ${isAdmin ? 'var(--accent-rose)' : 'var(--accent-primary)'}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}>
-                  {currentUser.username}
+                  {isAdmin ? <Shield size={16} color="#fb7185" /> : <UserCheck size={16} color="#818cf8" />}
                 </div>
-                <div style={{
-                  fontSize: '0.7rem',
-                  textTransform: 'uppercase',
-                  fontWeight: 600,
-                  color: isAdmin ? '#34d399' : '#818cf8',
-                  letterSpacing: '0.04em'
-                }}>
-                  {currentUser.role || (currentUser.is_staff ? 'Admin' : 'User')}
+                <div>
+                  <div style={{ fontSize: '0.875rem', fontWeight: 700, color: '#ffffff' }}>
+                    {currentUser.username}
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                    {currentUser.email || 'Online Session'}
+                  </div>
                 </div>
               </div>
+
+              <span className={`badge ${isAdmin ? 'badge-rose' : 'badge-indigo'}`} style={{ fontSize: '0.68rem' }}>
+                {currentUser.role?.toUpperCase() || (currentUser.is_staff ? 'ADMIN' : 'USER')}
+              </span>
             </div>
 
-            <button
-              onClick={onLogout}
-              className="btn btn-ghost btn-sm"
-              title="Log out"
-              style={{ padding: '4px 6px', color: 'var(--text-muted)' }}
-            >
-              <LogOut size={14} />
-            </button>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingTop: 8,
+              borderTop: '1px solid rgba(255, 255, 255, 0.06)'
+            }}>
+              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                {isAdmin ? 'Full System Rights' : 'Manager Allocation Rights'}
+              </span>
+              <button
+                onClick={onLogout}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--accent-rose)',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4
+                }}
+              >
+                <LogOut size={12} />
+                <span>Sign Out</span>
+              </button>
+            </div>
           </div>
         ) : (
           <button
@@ -207,7 +254,7 @@ export default function Sidebar({
           return (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => handleNavClick(item.id)}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -221,20 +268,8 @@ export default function Sidebar({
                 fontSize: '0.875rem',
                 cursor: 'pointer',
                 transition: 'all 0.15s ease',
-                width: '100%',
-                textAlign: 'left'
-              }}
-              onMouseEnter={(e) => {
-                if (!isActive) {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)';
-                  e.currentTarget.style.color = '#ffffff';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isActive) {
-                  e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.color = 'var(--text-secondary)';
-                }
+                textAlign: 'left',
+                width: '100%'
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
@@ -281,7 +316,7 @@ export default function Sidebar({
 
         {isAdmin && (
           <button
-            onClick={onOpenSetup}
+            onClick={() => { onOpenSetup(); if (onClose) onClose(); }}
             className="btn btn-primary btn-sm"
             style={{ width: '100%', justifyContent: 'flex-start', padding: '8px 12px', background: 'linear-gradient(135deg, #fbbf24 0%, #d97706 100%)', color: '#fff', border: 'none', boxShadow: '0 4px 12px rgba(245, 158, 11, 0.2)' }}
           >
@@ -290,26 +325,8 @@ export default function Sidebar({
           </button>
         )}
 
-        <button
-          onClick={onOpenAddUnit}
-          className="btn btn-secondary btn-sm"
-          style={{ width: '100%', justifyContent: 'flex-start', padding: '8px 12px' }}
-        >
-          <PlusCircle size={15} color="#10b981" />
-          <span>New Unit</span>
-        </button>
-
-        <button
-          onClick={onOpenAddProperty}
-          className="btn btn-secondary btn-sm"
-          style={{ width: '100%', justifyContent: 'flex-start', padding: '8px 12px' }}
-        >
-          <Building2 size={15} color="#6366f1" />
-          <span>New Property</span>
-        </button>
-
         <a
-          href="http://localhost:8000/admin/"
+          href="/admin/"
           target="_blank"
           rel="noreferrer"
           className="btn btn-ghost btn-sm"

@@ -22,6 +22,7 @@ class Unit(models.Model):
     tenant_phone = models.CharField(max_length=30, blank=True)
     monthly_rate = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     is_active = models.BooleanField(default=True)
+    is_occupied = models.BooleanField(default=False)
 
     def __str__(self):
         return self.unit_id

@@ -7,7 +7,6 @@ import {
   ShieldAlert,
   AlertTriangle,
   ArrowRight,
-  PlusCircle,
   FileSpreadsheet,
   CheckCircle,
   Sparkles,
@@ -16,9 +15,7 @@ import {
 
 export default function DashboardView({
   stats,
-  setActiveTab,
-  onOpenAddUnit,
-  onOpenAddProperty
+  setActiveTab
 }) {
   const formatCurrency = (val) => {
     return new Intl.NumberFormat('en-UG', {
@@ -85,13 +82,6 @@ export default function DashboardView({
             >
               <FileSpreadsheet size={16} />
               <span>Import Receipts</span>
-            </button>
-            <button
-              onClick={onOpenAddUnit}
-              className="btn btn-secondary"
-            >
-              <PlusCircle size={16} />
-              <span>Add Unit</span>
             </button>
           </div>
         </div>

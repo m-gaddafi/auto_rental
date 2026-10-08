@@ -13,7 +13,7 @@ import AddPropertyModal from './components/AddPropertyModal';
 import SetupModal from './components/SetupModal';
 import Toast from './components/Toast';
 import { api } from './api';
-import { RotateCw } from 'lucide-react';
+import { RotateCw, Menu, Building2, Shield, Settings } from 'lucide-react';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -23,6 +23,7 @@ export default function App() {
   const [properties, setProperties] = useState([]);
   const [units, setUnits] = useState([]);
   const [toast, setToast] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Modals
   const [isAddUnitOpen, setIsAddUnitOpen] = useState(false);
@@ -101,8 +102,21 @@ export default function App() {
       console.error('Logout error:', err);
     } finally {
       setCurrentUser(null);
+      setIsMobileMenuOpen(false);
       showToast('You have been logged out. Please sign in to continue.', 'info');
     }
+  };
+
+  const isAdmin = currentUser?.role === 'admin' || currentUser?.is_superuser || currentUser?.is_staff;
+
+  const tabLabels = {
+    'dashboard': 'Dashboard',
+    'rent-sheet': 'Rent Ledger',
+    'units': 'Properties & Units',
+    'import': 'Import Receipts',
+    'confirmations': 'Confirmations',
+    'verifications': 'Verifications',
+    'masterlog': 'Master Log',
   };
 
   // If checking authentication on initial load, show minimal sleek loader
@@ -136,10 +150,18 @@ export default function App() {
     );
   }
 
-  // User is logged in: Render the full application with Left Sidebar
+  // User is logged in: Render the full application with Responsive Sidebar
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'row' }}>
-      {/* Left Sidebar Navigation containing ALL buttons on the left */}
+    <div className="app-container">
+      {/* Mobile Drawer Backdrop */}
+      {isMobileMenuOpen && (
+        <div
+          className="sidebar-backdrop"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Left Sidebar Navigation */}
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -147,33 +169,86 @@ export default function App() {
         currentUser={currentUser}
         onOpenLogin={() => {}}
         onLogout={handleLogout}
-        onOpenAddUnit={() => setIsAddUnitOpen(true)}
-        onOpenAddProperty={() => setIsAddPropertyOpen(true)}
         onOpenSetup={() => setIsSetupOpen(true)}
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
       />
 
       {/* Main Content Area on the right */}
-      <div style={{
-        flex: 1,
-        minWidth: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        background: 'transparent',
-        overflowX: 'hidden'
-      }}>
-        <main style={{
-          maxWidth: 1380,
-          width: '100%',
-          margin: '0 auto',
-          padding: '28px 32px 64px 32px',
-          flex: 1
-        }}>
+      <div className="main-content-wrapper">
+        {/* Mobile Header Topbar (visible only on screens < 1024px) */}
+        <header className="mobile-topbar">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              style={{
+                background: 'rgba(255, 255, 255, 0.08)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-md)',
+                width: 38,
+                height: 38,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#ffffff',
+                cursor: 'pointer',
+                padding: 0
+              }}
+              title="Toggle Menu"
+            >
+              <Menu size={20} />
+            </button>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{
+                width: 30,
+                height: 30,
+                borderRadius: 'var(--radius-sm)',
+                background: 'linear-gradient(135deg, #6366f1 0%, #10b981 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <Building2 size={16} color="#ffffff" />
+              </div>
+              <span style={{ fontSize: '1.05rem', fontWeight: 800, color: '#ffffff' }}>
+                {tabLabels[activeTab] || 'AutoRental'}
+              </span>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {isAdmin && (
+              <button
+                onClick={() => setIsSetupOpen(true)}
+                className="btn btn-primary btn-sm"
+                style={{
+                  padding: '6px 10px',
+                  fontSize: '0.75rem',
+                  background: 'linear-gradient(135deg, #fbbf24 0%, #d97706 100%)',
+                  border: 'none',
+                  color: '#fff',
+                  fontWeight: 600
+                }}
+              >
+                <Settings size={13} />
+                <span>Setup</span>
+              </button>
+            )}
+            <span
+              className={`badge ${isAdmin ? 'badge-rose' : 'badge-indigo'}`}
+              style={{ fontSize: '0.68rem', padding: '3px 7px' }}
+            >
+              {currentUser.username}
+            </span>
+          </div>
+        </header>
+
+        <main className="main-container">
           {activeTab === 'dashboard' && (
             <DashboardView
               stats={stats}
               setActiveTab={setActiveTab}
-              onOpenAddUnit={() => setIsAddUnitOpen(true)}
-              onOpenAddProperty={() => setIsAddPropertyOpen(true)}
             />
           )}
 
@@ -260,7 +335,7 @@ export default function App() {
         }}
       />
 
-      {/* Notification Toast */}
+      {/* Global Toast Notifications */}
       <Toast toast={toast} onClose={() => setToast(null)} />
     </div>
   );

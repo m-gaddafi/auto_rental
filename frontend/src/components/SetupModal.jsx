@@ -65,7 +65,7 @@ export default function SetupModal({ isOpen, onClose, showToast, properties, uni
   if (!isOpen) return null;
 
   return (
-    <div style={{
+    <div className="setup-modal-overlay" style={{
       position: 'fixed',
       top: 0, left: 0, right: 0, bottom: 0,
       background: 'rgba(0, 0, 0, 0.7)',
@@ -75,13 +75,13 @@ export default function SetupModal({ isOpen, onClose, showToast, properties, uni
       justifyContent: 'center',
       zIndex: 9999
     }}>
-      <div style={{
+      <div className="setup-modal-shell" style={{
         background: 'var(--bg-card)',
         border: '1px solid var(--border-subtle)',
         borderRadius: 'var(--radius-lg)',
-        width: '100%',
+        width: 'min(100%, 900px)',
         maxWidth: 900,
-        height: '80vh',
+        height: 'min(80vh, 760px)',
         display: 'flex',
         flexDirection: 'column',
         boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
@@ -112,9 +112,9 @@ export default function SetupModal({ isOpen, onClose, showToast, properties, uni
           </button>
         </div>
 
-        <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        <div className="setup-modal-body" style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
           {/* Tabs Sidebar */}
-          <div style={{
+          <div className="setup-modal-tabs" style={{
             width: 220,
             borderRight: '1px solid var(--border-subtle)',
             padding: 16,
@@ -174,7 +174,7 @@ export default function SetupModal({ isOpen, onClose, showToast, properties, uni
           </div>
 
           {/* Tab Content */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
+          <div className="setup-modal-content" style={{ flex: 1, overflowY: 'auto', padding: 24, minWidth: 0 }}>
             {activeTab === 'users' && (
               <div>
                 <h3 style={{ marginTop: 0, marginBottom: 20 }}>Existing Users</h3>
@@ -237,7 +237,7 @@ export default function SetupModal({ isOpen, onClose, showToast, properties, uni
                 <h3 style={{ marginTop: 0, marginBottom: 20 }}>Properties & Units Management</h3>
                 
                 {properties.map(p => {
-                  const propUnits = units.filter(u => u.property_id === p.id);
+                  const propUnits = units.filter(u => Number(u.property_id ?? u.property) === Number(p.id));
                   return (
                     <div key={p.id} style={{ marginBottom: 24, border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.03)', padding: '12px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
@@ -250,7 +250,7 @@ export default function SetupModal({ isOpen, onClose, showToast, properties, uni
                         {propUnits.length === 0 ? (
                           <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No units in this property.</div>
                         ) : (
-                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                          <div className="setup-units-table-wrap"><table style={{ width: '100%', minWidth: 420, borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                             <thead>
                               <tr style={{ color: 'var(--text-muted)', textAlign: 'left', borderBottom: '1px solid var(--border-subtle)' }}>
                                 <th style={{ paddingBottom: 8 }}>Unit ID</th>
@@ -264,19 +264,37 @@ export default function SetupModal({ isOpen, onClose, showToast, properties, uni
                                   <td style={{ padding: '10px 0', fontWeight: 600, color: '#fff' }}>{u.unit_id}</td>
                                   <td style={{ padding: '10px 0' }}>{u.tenant_name || '-'}</td>
                                   <td style={{ padding: '10px 0', textAlign: 'right' }}>
-                                    <button onClick={() => handleDeleteUnit(u.id)} className="btn btn-sm btn-ghost" style={{ padding: '4px 8px', color: '#ef4444' }} title="Delete Unit">
-                                      <Trash2 size={16} />
+                                    <button onClick={() => handleDeleteUnit(u.id)} className="btn btn-sm btn-ghost setup-delete-unit" style={{ padding: '4px 8px', color: '#ef4444' }} title="Delete Unit">
+                                      <Trash2 size={16} /><span>Delete</span>
                                     </button>
                                   </td>
                                 </tr>
                               ))}
                             </tbody>
-                          </table>
+                          </table></div>
                         )}
                       </div>
                     </div>
                   );
                 })}
+
+                {units.some(u => !u.property && !u.property_id) && (
+                  <div className="setup-orphan-units" style={{ marginBottom: 24, border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
+                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '12px 16px', borderBottom: '1px solid var(--border-subtle)', fontWeight: 700, color: '#fff' }}>Independent Units</div>
+                    <div className="setup-units-table-wrap" style={{ padding: 16 }}>
+                      <table style={{ width: '100%', minWidth: 420, borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                        <thead><tr style={{ color: 'var(--text-muted)', textAlign: 'left', borderBottom: '1px solid var(--border-subtle)' }}><th style={{ paddingBottom: 8 }}>Unit ID</th><th style={{ paddingBottom: 8 }}>Tenant</th><th style={{ paddingBottom: 8, textAlign: 'right' }}>Actions</th></tr></thead>
+                        <tbody>{units.filter(u => !u.property && !u.property_id).map(u => (
+                          <tr key={u.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                            <td style={{ padding: '10px 0', fontWeight: 600, color: '#fff' }}>{u.unit_id}</td>
+                            <td style={{ padding: '10px 0' }}>{u.tenant_name || '-'}</td>
+                            <td style={{ padding: '10px 0', textAlign: 'right' }}><button onClick={() => handleDeleteUnit(u.id)} className="btn btn-sm btn-ghost setup-delete-unit" style={{ padding: '4px 8px', color: '#ef4444' }} title="Delete Unit"><Trash2 size={16} /><span>Delete</span></button></td>
+                          </tr>
+                        ))}</tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

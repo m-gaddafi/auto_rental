@@ -29,6 +29,7 @@ class UnitSerializer(serializers.ModelSerializer):
             'tenant_phone',
             'monthly_rate',
             'is_active',
+            'is_occupied',
             'total_paid',
             'current_balance',
         ]

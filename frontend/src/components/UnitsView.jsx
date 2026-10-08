@@ -69,6 +69,16 @@ export default function UnitsView({
     }
   };
 
+  const handleToggleOccupancy = async (unit) => {
+    try {
+      await api.updateUnit(unit.id, { is_occupied: !unit.is_occupied });
+      showToast(`Unit ${unit.unit_id} marked ${unit.is_occupied ? 'vacant' : 'occupied'}.`, 'success');
+      loadUnits();
+    } catch (err) {
+      showToast(err.message || 'Failed to update occupancy', 'error');
+    }
+  };
+
   const formatMoney = (val) => {
     return new Intl.NumberFormat('en-UG', {
       maximumFractionDigits: 0
@@ -231,20 +241,21 @@ export default function UnitsView({
                 <th style={{ padding: '14px 18px', color: 'var(--text-secondary)', fontWeight: 600, textAlign: 'right' }}>Monthly Rate</th>
                 <th style={{ padding: '14px 18px', color: 'var(--text-secondary)', fontWeight: 600, textAlign: 'right' }}>Total Paid</th>
                 <th style={{ padding: '14px 18px', color: 'var(--text-secondary)', fontWeight: 600, textAlign: 'right' }}>Balance</th>
-                <th style={{ padding: '14px 18px', color: 'var(--text-secondary)', fontWeight: 600, textAlign: 'center' }}>Status</th>
+                <th style={{ padding: '14px 18px', color: 'var(--text-secondary)', fontWeight: 600, textAlign: 'center' }}>Occupancy</th>
+                <th style={{ padding: '14px 18px', color: 'var(--text-secondary)', fontWeight: 600, textAlign: 'center' }}>Operational</th>
                 <th style={{ padding: '14px 18px', color: 'var(--text-secondary)', fontWeight: 600, textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={9} style={{ textAlign: 'center', padding: 40, color: 'var(--text-secondary)' }}>
+                  <td colSpan={10} style={{ textAlign: 'center', padding: 40, color: 'var(--text-secondary)' }}>
                     Loading rental units...
                   </td>
                 </tr>
               ) : units.length === 0 ? (
                 <tr>
-                  <td colSpan={9} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
+                  <td colSpan={10} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
                     No rental units found matching your search.
                   </td>
                 </tr>
@@ -268,7 +279,7 @@ export default function UnitsView({
                       <td style={{ padding: '14px 18px', color: unit.tenant_name ? '#ffffff' : 'var(--text-muted)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <User size={14} color="var(--text-muted)" />
-                          <span>{unit.tenant_name || 'Vacant'}</span>
+                          <span>{unit.tenant_name || (unit.is_occupied ? 'Occupied' : 'Vacant')}</span>
                         </div>
                       </td>
                       <td style={{ padding: '14px 18px', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', fontSize: '0.8rem' }}>
@@ -293,6 +304,17 @@ export default function UnitsView({
                         color: balance > 0 ? '#fbbf24' : balance < 0 ? '#34d399' : '#94a3b8'
                       }}>
                         UGX {formatMoney(balance)}
+                      </td>
+                      <td style={{ padding: '14px 18px', textAlign: 'center' }}>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleOccupancy(unit)}
+                          className={`badge ${unit.is_occupied ? 'badge-indigo' : 'badge-amber'}`}
+                          style={{ cursor: 'pointer', border: 'none', padding: '4px 10px' }}
+                          title="Click to mark vacant or occupied"
+                        >
+                          {unit.is_occupied ? 'Occupied' : 'Vacant'}
+                        </button>
                       </td>
                       <td style={{ padding: '14px 18px', textAlign: 'center' }}>
                         <button
