@@ -196,6 +196,7 @@ export default function RentSheetView({ properties }) {
               <tr>
                 <th className="sticky-col" style={{ width: 140 }}>Unit ID</th>
                 <th className="sticky-col-2" style={{ width: 140 }}>Monthly Rate</th>
+                <th style={{ minWidth: 100 }}>Unit Status</th>
                 {sheet.months.map(([key, label]) => (
                   <th key={key} style={{ minWidth: 105, textTransform: 'capitalize' }}>
                     {label.substring(0, 3)}
@@ -206,7 +207,7 @@ export default function RentSheetView({ properties }) {
             <tbody>
               {sheet.rows.length === 0 ? (
                 <tr>
-                  <td colSpan={14} style={{ textAlign: 'center', padding: 32, color: 'var(--text-muted)' }}>
+                  <td colSpan={15} style={{ textAlign: 'center', padding: 32, color: 'var(--text-muted)' }}>
                     No units enrolled for this filter.
                   </td>
                 </tr>
@@ -229,6 +230,8 @@ export default function RentSheetView({ properties }) {
                         UGX {formatMoney(row.unit.monthly_rate)}/mo
                       </div>
                     </td>
+
+                    <td><span className={`badge ${row.unit.is_active ? 'badge-emerald' : 'badge-rose'}`}>{row.unit.is_active ? 'Active' : 'Inactive'}</span></td>
 
                     {/* 12 Months Cells */}
                     {row.cells.map((cell, idx) => {

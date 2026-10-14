@@ -20,8 +20,10 @@ def _parse_spreadsheet_row(headers, values):
         'payment_date': {'date', 'paymentdate'},
         'payment_time': {'time', 'paymenttime'},
         'sender_name': {'from', 'sender', 'sendername', 'name', 'fromhandlername', 'senderhandlername', 'payername'},
+        'recipient_name': {'to', 'recipient', 'recipientname', 'tohandlername', 'tohandler'},
         'sender_phone': {'tel', 'phone', 'senderphone', 'telephone'},
         'amount': {'amount', 'paymentamount', 'amountpaid'},
+        'balance': {'balance', 'accountbalance', 'remainingbalance'},
     }
     data = {key: '' for key in aliases}
     for header, value in zip(headers, values):
@@ -34,9 +36,12 @@ def _parse_spreadsheet_row(headers, values):
     parsed = parse_single_mtn_text(text)
     parsed['transaction_id'] = str(data['transaction_id'] or '').strip()
     parsed['sender_name'] = str(data['sender_name'] or '').strip()
+    parsed['recipient_name'] = str(data['recipient_name'] or '').strip()
     parsed['sender_phone'] = str(data['sender_phone'] or '').strip()
     if data['amount'] not in ('', None):
-        parsed['amount'] = Decimal(str(data['amount']).replace(',', '').replace('UGX', '').strip())
+        parsed['amount'] = _parse_currency(data['amount'])
+    if data['balance'] not in ('', None):
+        parsed['balance'] = _parse_currency(data['balance'])
     if data['payment_date']:
         if hasattr(data['payment_date'], 'year'):
             parsed['payment_date'] = data['payment_date']
@@ -50,6 +55,20 @@ def _parse_spreadsheet_row(headers, values):
     if data['payment_time']:
         parsed['payment_time'] = data['payment_time'] if hasattr(data['payment_time'], 'hour') else parsed['payment_time']
     return parsed
+
+
+def _parse_currency(value):
+    normalized = str(value).replace('\xa0', ' ').replace(',', '').strip()
+    normalized = re.sub(r'(?i)UGX\s*', '', normalized).strip()
+    return Decimal(normalized)
+
+
+def _is_valid_uploaded_payment(payment):
+    """Ignore repeated header and summary rows in uploaded bank statements."""
+    return bool(
+        payment.get('amount', Decimal('0')) > 0
+        and (payment.get('transaction_id') or payment.get('sender_name'))
+    )
 
 
 def _parse_date_time(value):
@@ -81,7 +100,13 @@ def parse_uploaded_payments(uploaded_file):
         if not rows:
             return []
         headers = rows[0]
-        return [_parse_spreadsheet_row(headers, row) for row in rows[1:] if any(value not in (None, '') for value in row)]
+        return [
+            payment
+            for row in rows[1:]
+            if any(value not in (None, '') for value in row)
+            for payment in [_parse_spreadsheet_row(headers, row)]
+            if _is_valid_uploaded_payment(payment)
+        ]
 
     if filename.endswith('.docx'):
         namespace = {'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
@@ -92,8 +117,7 @@ def parse_uploaded_payments(uploaded_file):
             text = ''.join(node.text or '' for node in paragraph.findall('.//w:t', namespace))
             if text.strip():
                 paragraphs.append(text)
-        paragraph_text = '\n'.join(paragraphs)
-        parsed = parse_mtn_texts(paragraph_text)
+        parsed = []
         for table in document.findall('.//w:tbl', namespace):
             rows = table.findall('./w:tr', namespace)
             if not rows:
@@ -103,13 +127,20 @@ def parse_uploaded_payments(uploaded_file):
                 for cell in rows[0].findall('./w:tc', namespace)
             ]
             parsed.extend(
-                _parse_spreadsheet_row(
+                payment
+                for row in rows[1:]
+                for payment in [_parse_spreadsheet_row(
                     headers,
                     [''.join(node.text or '' for node in cell.findall('.//w:t', namespace)) for cell in row.findall('./w:tc', namespace)],
-                )
-                for row in rows[1:]
+                )]
+                if _is_valid_uploaded_payment(payment)
             )
-        return parsed
+        if parsed:
+            return parsed
+
+        # Some Word receipt exports contain plain paragraphs rather than tables.
+        paragraph_text = '\n'.join(paragraphs)
+        return [payment for payment in parse_mtn_texts(paragraph_text) if _is_valid_uploaded_payment(payment)]
 
     raise ValueError('Unsupported file type. Upload a .docx or .xlsx file.')
 

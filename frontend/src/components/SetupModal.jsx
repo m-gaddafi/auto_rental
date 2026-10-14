@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, UserPlus, Users, Building2, Settings2, Trash2, Edit2 } from 'lucide-react';
+import { X, UserPlus, Users, Building2, Settings2, Trash2, PlusCircle } from 'lucide-react';
 import { api } from '../api';
 
-export default function SetupModal({ isOpen, onClose, showToast, properties, units, refreshData }) {
+export default function SetupModal({ isOpen, onClose, showToast, properties, units, refreshData, onAddProperty, onAddUnit }) {
   const [activeTab, setActiveTab] = useState('users');
   const [users, setUsers] = useState([]);
   
@@ -234,7 +234,13 @@ export default function SetupModal({ isOpen, onClose, showToast, properties, uni
 
             {activeTab === 'units' && (
               <div>
-                <h3 style={{ marginTop: 0, marginBottom: 20 }}>Properties & Units Management</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 20 }}>
+                  <h3 style={{ margin: 0 }}>Properties & Units Management</h3>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={onAddProperty} className="btn btn-secondary btn-sm"><PlusCircle size={15} /> Add Property</button>
+                    <button onClick={onAddUnit} className="btn btn-primary btn-sm"><PlusCircle size={15} /> Add Unit</button>
+                  </div>
+                </div>
                 
                 {properties.map(p => {
                   const propUnits = units.filter(u => Number(u.property_id ?? u.property) === Number(p.id));

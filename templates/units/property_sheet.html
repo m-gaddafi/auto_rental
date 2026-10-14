@@ -6,7 +6,6 @@
     <p class="text-muted mb-0">Only units registered under {{ property.name }} are shown here.</p>
   </div>
   <div>
-    {% if can_add_unit %}<a class="btn btn-success" href="{% url 'create_unit' %}?property={{ property.id }}">Add {{ property.name }} unit</a>{% endif %}
     <a class="btn btn-outline-secondary ms-2" href="{% url 'units_dashboard' %}">All properties</a>
   </div>
 </div>

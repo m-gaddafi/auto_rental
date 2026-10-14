@@ -38,7 +38,7 @@ export default function ConfirmationsView({
       const res = await api.getPendingConfirmations();
       setPayments(res.data || []);
     } catch (err) {
-      showToast(err.message || 'Failed to load pending payments', 'error');
+      showToast(err.message || 'Failed to load unallocated payments', 'error');
     } finally {
       setLoading(false);
     }
@@ -127,7 +127,7 @@ export default function ConfirmationsView({
       loadPendingPayments();
       if (onRefreshStats) onRefreshStats();
     } catch (err) {
-      showToast(err.message || 'Failed to submit confirmation', 'error');
+      showToast(err.message || 'Failed to submit payment allocation', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -153,7 +153,7 @@ export default function ConfirmationsView({
         <div>
           <h1 style={{ fontSize: '1.35rem', display: 'flex', alignItems: 'center', gap: 10 }}>
             <CheckCircle2 size={22} color="#f59e0b" />
-            <span>Manager Confirmations Queue</span>
+          <span>Payment Allocation Queue</span>
           </h1>
           <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
             Allocate incoming transactions to tenant units with Full, Part, or Balance settlement tags
@@ -175,7 +175,7 @@ export default function ConfirmationsView({
         {loading ? (
           <div style={{ padding: 48, textAlign: 'center', color: 'var(--text-secondary)' }}>
             <RotateCw size={24} className="pulse" style={{ margin: '0 auto 10px' }} />
-            <div>Loading pending payments...</div>
+            <div>Loading unallocated payments...</div>
           </div>
         ) : payments.length === 0 ? (
           <div style={{ padding: 48, textAlign: 'center', color: 'var(--text-muted)' }}>
@@ -188,11 +188,12 @@ export default function ConfirmationsView({
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
               <thead>
                 <tr style={{ background: 'rgba(255, 255, 255, 0.03)', borderBottom: '1px solid var(--border-subtle)' }}>
-                  <th style={{ padding: '14px 20px', color: 'var(--text-secondary)' }}>Txn ID</th>
-                  <th style={{ padding: '14px 20px', color: 'var(--text-secondary)' }}>Date & Time</th>
-                  <th style={{ padding: '14px 20px', color: 'var(--text-secondary)' }}>Sender</th>
-                  <th style={{ padding: '14px 20px', color: 'var(--text-secondary)' }}>Phone</th>
+                  <th style={{ padding: '14px 20px', color: 'var(--text-secondary)' }}>Id</th>
+                  <th style={{ padding: '14px 20px', color: 'var(--text-secondary)' }}>Date</th>
+                  <th style={{ padding: '14px 20px', color: 'var(--text-secondary)' }}>From handler name</th>
+                  <th style={{ padding: '14px 20px', color: 'var(--text-secondary)' }}>To handler name</th>
                   <th style={{ padding: '14px 20px', color: 'var(--text-secondary)', textAlign: 'right' }}>Amount</th>
+                  <th style={{ padding: '14px 20px', color: 'var(--text-secondary)', textAlign: 'right' }}>Balance</th>
                   <th style={{ padding: '14px 20px', color: 'var(--text-secondary)' }}>Auto-Match</th>
                   <th style={{ padding: '14px 20px', color: 'var(--text-secondary)', textAlign: 'right' }}>Action</th>
                 </tr>
@@ -223,10 +224,13 @@ export default function ConfirmationsView({
                         {p.sender_name || '—'}
                       </td>
                       <td style={{ padding: '14px 20px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
-                        {p.sender_phone || '—'}
+                        {p.recipient_name || '—'}
                       </td>
                       <td style={{ padding: '14px 20px', textAlign: 'right', fontWeight: 700, color: '#34d399', fontFamily: 'var(--font-mono)' }}>
                         UGX {formatMoney(p.amount)}
+                      </td>
+                      <td style={{ padding: '14px 20px', textAlign: 'right', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>
+                        {p.balance == null ? '—' : `UGX ${formatMoney(p.balance)}`}
                       </td>
                       <td style={{ padding: '14px 20px' }}>
                         {p.matched_unit_name ? (
@@ -242,7 +246,7 @@ export default function ConfirmationsView({
                           onClick={() => openAllocateModal(p)}
                           className="btn btn-primary btn-sm"
                         >
-                          <span>Allocate & Confirm</span>
+                          <span>Allocate Payment</span>
                           <ArrowRight size={14} />
                         </button>
                       </td>
@@ -267,7 +271,13 @@ export default function ConfirmationsView({
                   <span>•</span>
                   <span>Sender: <strong style={{ color: '#fff' }}>{activePayment.sender_name || '—'}</strong></span>
                   <span>•</span>
+                  <span>Recipient: <strong style={{ color: '#fff' }}>{activePayment.recipient_name || '—'}</strong></span>
+                  <span>•</span>
                   <span>Amount: <strong style={{ color: '#34d399' }}>UGX {formatMoney(activePayment.amount)}</strong></span>
+                  {activePayment.balance != null && <>
+                    <span>•</span>
+                    <span>Balance: <strong style={{ color: '#fff' }}>UGX {formatMoney(activePayment.balance)}</strong></span>
+                  </>}
                 </div>
               </div>
               <button

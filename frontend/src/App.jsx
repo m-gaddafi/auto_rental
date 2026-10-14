@@ -7,7 +7,6 @@ import UnitsView from './components/UnitsView';
 import ImportReceiptsView from './components/ImportReceiptsView';
 import ConfirmationsView from './components/ConfirmationsView';
 import VerificationsView from './components/VerificationsView';
-import MasterLogView from './components/MasterLogView';
 import AddUnitModal from './components/AddUnitModal';
 import AddPropertyModal from './components/AddPropertyModal';
 import SetupModal from './components/SetupModal';
@@ -92,6 +91,7 @@ export default function App() {
 
   const handleLoginSuccess = (user) => {
     setCurrentUser(user);
+    setActiveTab('dashboard');
     loadDashboardData();
   };
 
@@ -114,9 +114,8 @@ export default function App() {
     'rent-sheet': 'Rent Ledger',
     'units': 'Properties & Units',
     'import': 'Import Receipts',
-    'confirmations': 'Confirmations',
+    'confirmations': 'Payment Allocation',
     'verifications': 'Verifications',
-    'masterlog': 'Master Log',
   };
 
   // If checking authentication on initial load, show minimal sleek loader
@@ -262,8 +261,6 @@ export default function App() {
             <UnitsView
               properties={properties}
               onRefreshProperties={refreshProperties}
-              onOpenAddUnit={() => setIsAddUnitOpen(true)}
-              onOpenAddProperty={() => setIsAddPropertyOpen(true)}
               showToast={showToast}
             />
           )}
@@ -292,11 +289,6 @@ export default function App() {
             />
           )}
 
-          {activeTab === 'masterlog' && (
-            <MasterLogView
-              showToast={showToast}
-            />
-          )}
         </main>
       </div>
 
@@ -328,6 +320,14 @@ export default function App() {
         showToast={showToast}
         properties={properties}
         units={units}
+        onAddProperty={() => {
+          setIsSetupOpen(false);
+          setIsAddPropertyOpen(true);
+        }}
+        onAddUnit={() => {
+          setIsSetupOpen(false);
+          setIsAddUnitOpen(true);
+        }}
         refreshData={() => {
           refreshProperties();
           refreshUnits();

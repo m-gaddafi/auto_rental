@@ -2,10 +2,6 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-1">
   <h2 class="mb-0">Properties &amp; Units</h2>
-  {% if can_add_unit %}
-    <a class="btn btn-outline-dark me-2" href="{% url 'create_property' %}">Add property</a>
-    <a class="btn btn-success" href="{% url 'create_unit' %}">Add unit</a>
-  {% endif %}
 </div>
 <p class="text-muted">Each property has its own units. A new unit is automatically included in every month of the {{ sheet.year }} accounting sheet.</p>
 <div class="row g-3 mb-4">

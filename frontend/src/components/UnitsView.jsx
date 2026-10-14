@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Building2,
   Home,
-  PlusCircle,
   Search,
   Filter,
   Phone,
@@ -11,8 +10,6 @@ import {
   RotateCw,
   Wallet,
   Edit,
-  Power,
-  PowerOff
 } from 'lucide-react';
 import EditUnitModal from './EditUnitModal';
 import { api } from '../api';
@@ -20,8 +17,6 @@ import { api } from '../api';
 export default function UnitsView({
   properties,
   onRefreshProperties,
-  onOpenAddUnit,
-  onOpenAddProperty,
   showToast
 }) {
   const [units, setUnits] = useState([]);
@@ -56,17 +51,6 @@ export default function UnitsView({
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     loadUnits();
-  };
-
-  const handleToggleStatus = async (unit) => {
-    try {
-      const res = await api.toggleUnitStatus(unit.id);
-      const newStatus = res.data.is_active;
-      showToast(`Unit ${unit.unit_id} is now ${newStatus ? 'ACTIVE' : 'INACTIVE'}.`, 'success');
-      loadUnits();
-    } catch (err) {
-      showToast(err.message || 'Failed to change status', 'error');
-    }
   };
 
   const handleToggleOccupancy = async (unit) => {
@@ -106,22 +90,6 @@ export default function UnitsView({
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <button
-            onClick={onOpenAddProperty}
-            className="btn btn-secondary btn-sm"
-          >
-            <PlusCircle size={15} />
-            <span>Add Property</span>
-          </button>
-          <button
-            onClick={onOpenAddUnit}
-            className="btn btn-primary btn-sm"
-          >
-            <PlusCircle size={15} />
-            <span>Add Unit</span>
-          </button>
-        </div>
       </div>
 
       {/* Properties chips */}
@@ -317,21 +285,10 @@ export default function UnitsView({
                         </button>
                       </td>
                       <td style={{ padding: '14px 18px', textAlign: 'center' }}>
-                        <button
-                          type="button"
-                          onClick={() => handleToggleStatus(unit)}
-                          className={`badge ${unit.is_active ? 'badge-emerald' : 'badge-rose'}`}
-                          style={{
-                            cursor: 'pointer',
-                            border: 'none',
-                            padding: '4px 10px',
-                            transition: 'transform 0.15s ease'
-                          }}
-                          title="Click to toggle Active / Inactive"
-                        >
+                        <span className={`badge ${unit.is_active ? 'badge-emerald' : 'badge-rose'}`} style={{ padding: '4px 10px' }}>
                           <span className={`pulse-dot ${unit.is_active ? 'pulse-emerald' : ''}`} style={{ background: unit.is_active ? '#10b981' : '#f43f5e' }} />
                           <span>{unit.is_active ? 'Active' : 'Inactive'}</span>
-                        </button>
+                        </span>
                       </td>
                       <td style={{ padding: '14px 18px', textAlign: 'right' }}>
                         <button

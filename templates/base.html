@@ -35,7 +35,7 @@
       {% if user.is_superuser or user.is_staff or user.role == 'admin' or user.can_paste_payments %}
         <a class="nav-link" href="{% url 'ingest_payments' %}">Import Receipts</a>
       {% endif %}
-      <a class="nav-link" href="{% url 'pending_confirmations' %}">Payment Locations</a>
+      <a class="nav-link" href="{% url 'pending_confirmations' %}">Payment Allocation</a>
       {% if user.is_authenticated and user.is_superuser or user.is_authenticated and user.is_staff or user.is_authenticated and user.role == 'admin' or user.can_verify_payments %}
         <a class="nav-link" href="{% url 'pending_verifications' %}">Verifications</a>
       {% endif %}
@@ -48,16 +48,12 @@
             Set up
           </a>
           <ul class="dropdown-menu" aria-labelledby="setupDropdown">
-            <li><a class="dropdown-item" href="{% url 'create_property' %}">Add property</a></li>
             <li><a class="dropdown-item" href="{% url 'create_manager' %}">Add users</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><h6 class="dropdown-header">View</h6></li>
             <li><a class="dropdown-item" href="{% url 'units_dashboard' %}">View units</a></li>
             <li><a class="dropdown-item" href="/admin/accounts/customuser/">View users</a></li>
             <li><a class="dropdown-item" href="{% url 'units_dashboard' %}">Property units</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><h6 class="dropdown-header">Modify</h6></li>
-            <li><a class="dropdown-item" href="{% url 'create_unit' %}">Add unit</a></li>
             <li><a class="dropdown-item" href="/admin/units/unit/">Delete unit</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><h6 class="dropdown-header">Delete</h6></li>

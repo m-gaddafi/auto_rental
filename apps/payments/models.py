@@ -7,8 +7,10 @@ class RawPayment(models.Model):
     payment_date = models.DateField(blank=True, null=True)
     payment_time = models.TimeField(blank=True, null=True)
     sender_name = models.CharField(max_length=255, blank=True)
+    recipient_name = models.CharField(max_length=255, blank=True)
     sender_phone = models.CharField(max_length=30, blank=True)
     amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    balance = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     raw_text = models.TextField(blank=True)
     matched_unit = models.ForeignKey(Unit, null=True, blank=True, on_delete=models.SET_NULL, related_name='matched_payments')
     status = models.CharField(

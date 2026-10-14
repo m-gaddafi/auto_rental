@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  TrendingUp,
   Building,
   Home,
   Clock,
@@ -9,8 +8,7 @@ import {
   ArrowRight,
   FileSpreadsheet,
   CheckCircle,
-  Sparkles,
-  Zap
+  Sparkles
 } from 'lucide-react';
 
 export default function DashboardView({
@@ -141,57 +139,11 @@ export default function DashboardView({
         gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
         gap: 20
       }}>
-        {/* Card 1: Total Verified Revenue */}
-        <div className="glass-panel" style={{ padding: 24 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-            <span style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase' }}>
-              Verified Revenue ({stats?.year || 2026})
-            </span>
-            <div style={{
-              padding: 8,
-              borderRadius: 'var(--radius-md)',
-              background: 'rgba(16, 185, 129, 0.15)',
-              color: '#34d399'
-            }}>
-              <TrendingUp size={20} />
-            </div>
-          </div>
-          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#34d399', marginBottom: 4 }}>
-            {formatCurrency(stats?.total_revenue_year || 0)}
-          </div>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-            {stats?.confirmed_count || 0} reconciled & verified settlements
-          </div>
-        </div>
-
-        {/* Card 2: Monthly Potential */}
-        <div className="glass-panel" style={{ padding: 24 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-            <span style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase' }}>
-              Monthly Capacity
-            </span>
-            <div style={{
-              padding: 8,
-              borderRadius: 'var(--radius-md)',
-              background: 'rgba(99, 102, 241, 0.15)',
-              color: '#818cf8'
-            }}>
-              <Zap size={20} />
-            </div>
-          </div>
-          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#ffffff', marginBottom: 4 }}>
-            {formatCurrency(stats?.total_monthly_potential || 0)}
-          </div>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-            Across all {stats?.unit_count || 0} active rental units
-          </div>
-        </div>
-
         {/* Card 3: Pending Manager Confirmations */}
         <div className="glass-panel" style={{ padding: 24, cursor: 'pointer' }} onClick={() => setActiveTab('confirmations')}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
             <span style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase' }}>
-              Pending Allocation
+              Unallocated Payments
             </span>
             <div style={{
               padding: 8,
@@ -327,7 +279,7 @@ export default function DashboardView({
               <div>
                 <div style={{ fontWeight: 600, fontSize: '0.92rem', marginBottom: 2 }}>Admin Verification & Ledger Sync</div>
                 <div style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
-                  Administrator reviews and approves allocations. The system atomically posts entries to the Master Log and updates the Rent Spreadsheet.
+                  Administrator reviews and approves allocations. The system records payments and updates the Rent Ledger.
                 </div>
               </div>
             </div>

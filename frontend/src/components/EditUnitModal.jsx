@@ -15,7 +15,6 @@ export default function EditUnitModal({
   const [tenantName, setTenantName] = useState('');
   const [tenantPhone, setTenantPhone] = useState('');
   const [monthlyRate, setMonthlyRate] = useState('');
-  const [isActive, setIsActive] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -25,7 +24,6 @@ export default function EditUnitModal({
       setTenantName(unit.tenant_name || '');
       setTenantPhone(unit.tenant_phone || '');
       setMonthlyRate(unit.monthly_rate ? unit.monthly_rate.toString() : '0');
-      setIsActive(Boolean(unit.is_active));
     }
   }, [unit]);
 
@@ -46,7 +44,6 @@ export default function EditUnitModal({
         tenant_name: tenantName.trim(),
         tenant_phone: tenantPhone.trim(),
         monthly_rate: Number(monthlyRate) || 0,
-        is_active: isActive,
       });
 
       showToast(`Unit ${unitId} updated successfully!`, 'success');
@@ -78,11 +75,11 @@ export default function EditUnitModal({
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {/* Status Toggle Card */}
+          {/* Occupancy determines whether a unit is active. */}
           <div style={{
             padding: '14px 16px',
-            background: isActive ? 'rgba(16, 185, 129, 0.08)' : 'rgba(244, 63, 94, 0.08)',
-            border: `1px solid ${isActive ? 'rgba(16, 185, 129, 0.3)' : 'rgba(244, 63, 94, 0.3)'}`,
+            background: unit.is_active ? 'rgba(16, 185, 129, 0.08)' : 'rgba(244, 63, 94, 0.08)',
+            border: `1px solid ${unit.is_active ? 'rgba(16, 185, 129, 0.3)' : 'rgba(244, 63, 94, 0.3)'}`,
             borderRadius: 'var(--radius-md)',
             display: 'flex',
             alignItems: 'center',
@@ -90,23 +87,14 @@ export default function EditUnitModal({
             gap: 12
           }}>
             <div>
-              <div style={{ fontWeight: 700, fontSize: '0.9rem', color: isActive ? '#34d399' : '#fb7185', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ fontWeight: 700, fontSize: '0.9rem', color: unit.is_active ? '#34d399' : '#fb7185', display: 'flex', alignItems: 'center', gap: 6 }}>
                 <Power size={15} />
-                <span>Unit Status: {isActive ? 'ACTIVE (Operational)' : 'INACTIVE (Archived / Closed)'}</span>
+                <span>Unit Status: {unit.is_active ? 'ACTIVE (Occupied)' : 'INACTIVE (Vacant)'}</span>
               </div>
               <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: 2 }}>
-                {isActive ? 'Included in active rental spreadsheets and collections' : 'Excluded from monthly rent collections'}
+                Unit status follows occupancy and is displayed in the rent ledger.
               </div>
             </div>
-
-            <button
-              type="button"
-              onClick={() => setIsActive(!isActive)}
-              className={isActive ? 'btn btn-emerald btn-sm' : 'btn btn-secondary btn-sm'}
-              style={{ fontSize: '0.8rem', padding: '6px 12px' }}
-            >
-              {isActive ? 'Mark Inactive' : 'Mark Active'}
-            </button>
           </div>
 
           <div className="form-group">

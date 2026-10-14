@@ -249,11 +249,12 @@ TxnID: MTN892178344 Date: 06/10/2026 Time: 14:00 From: Peter Mukasa Tel: 2567019
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
               <thead>
                 <tr style={{ background: '#1e293b', borderBottom: '1px solid var(--border-subtle)' }}>
-                  <th style={{ padding: '12px 16px', color: '#cbd5e1' }}>Txn ID</th>
-                  <th style={{ padding: '12px 16px', color: '#cbd5e1' }}>Date & Time</th>
-                  <th style={{ padding: '12px 16px', color: '#cbd5e1' }}>Sender</th>
-                  <th style={{ padding: '12px 16px', color: '#cbd5e1' }}>Phone</th>
+                  <th style={{ padding: '12px 16px', color: '#cbd5e1' }}>Id</th>
+                  <th style={{ padding: '12px 16px', color: '#cbd5e1' }}>Date</th>
+                  <th style={{ padding: '12px 16px', color: '#cbd5e1' }}>From handler name</th>
+                  <th style={{ padding: '12px 16px', color: '#cbd5e1' }}>To handler name</th>
                   <th style={{ padding: '12px 16px', color: '#cbd5e1', textAlign: 'right' }}>Amount</th>
+                  <th style={{ padding: '12px 16px', color: '#cbd5e1', textAlign: 'right' }}>Balance</th>
                   <th style={{ padding: '12px 16px', color: '#cbd5e1', width: 220 }}>Matched Unit</th>
                 </tr>
               </thead>
@@ -272,10 +273,13 @@ TxnID: MTN892178344 Date: 06/10/2026 Time: 14:00 From: Peter Mukasa Tel: 2567019
                         {item.sender_name || '—'}
                       </td>
                       <td style={{ padding: '12px 16px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
-                        {item.sender_phone || '—'}
+                        {item.recipient_name || '—'}
                       </td>
                       <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 700, color: '#34d399', fontFamily: 'var(--font-mono)' }}>
                         UGX {formatMoney(item.amount)}
+                      </td>
+                      <td style={{ padding: '12px 16px', textAlign: 'right', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>
+                        {item.balance == null ? '—' : `UGX ${formatMoney(item.balance)}`}
                       </td>
                       <td style={{ padding: '12px 16px' }}>
                         <select

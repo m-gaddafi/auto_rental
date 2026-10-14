@@ -161,9 +161,4 @@ export const api = {
       body: JSON.stringify({ rejection_comment: rejectionComment }),
     }),
 
-  // Master Log
-  getMasterLog: (params = {}) => {
-    const query = new URLSearchParams(params).toString();
-    return request(`/masterlog/${query ? `?${query}` : ''}`);
-  },
 };

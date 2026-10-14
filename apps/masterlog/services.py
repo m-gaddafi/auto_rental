@@ -82,7 +82,7 @@ def _refresh_allocation_accounting(allocations):
 def build_rent_sheet(year=None, property_obj=None):
     """Build the spreadsheet-style rental view, optionally for one property."""
     year = year or date.today().year
-    units_query = Unit.objects.filter(is_active=True).select_related('property')
+    units_query = Unit.objects.all().select_related('property')
     if property_obj is not None:
         units_query = units_query.filter(property=property_obj)
     units = list(units_query.order_by('property__name', 'unit_id'))

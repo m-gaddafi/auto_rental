@@ -72,8 +72,10 @@ def api_parse_payments(request):
             'payment_date': str(item['payment_date']) if item.get('payment_date') else None,
             'payment_time': str(item['payment_time']) if item.get('payment_time') else None,
             'sender_name': item.get('sender_name') or '',
+            'recipient_name': item.get('recipient_name') or '',
             'sender_phone': phone,
             'amount': float(amount),
+            'balance': float(item['balance']) if item.get('balance') is not None else None,
             'raw_text': item.get('raw_text') or '',
             'suggested_unit_id': suggested_unit.id if suggested_unit else None,
             'suggested_unit_name': suggested_unit.unit_id if suggested_unit else None,
@@ -91,25 +93,43 @@ def api_import_payments(request):
 
     imported_count = 0
     skipped_count = 0
+    updated_count = 0
     created_payments = []
 
     for item in transactions:
         txn_id = item.get('transaction_id') or f'manual-{uuid.uuid4().hex[:8]}'
-        if RawPayment.objects.filter(transaction_id=txn_id).exists():
+        existing_payment = RawPayment.objects.filter(transaction_id=txn_id).first()
+        if existing_payment:
+            # Re-importing a statement can enrich previously imported receipts
+            # with newly supported columns without reopening allocated payments.
+            changed_fields = []
+            recipient_name = (item.get('recipient_name') or '').strip()
+            if recipient_name and not existing_payment.recipient_name:
+                existing_payment.recipient_name = recipient_name
+                changed_fields.append('recipient_name')
+            if item.get('balance') not in (None, '') and existing_payment.balance is None:
+                existing_payment.balance = Decimal(str(item['balance']))
+                changed_fields.append('balance')
+            if changed_fields:
+                existing_payment.save(update_fields=changed_fields + ['updated_at'])
+                updated_count += 1
             skipped_count += 1
             continue
 
         payment_date = item.get('payment_date')
         payment_time = item.get('payment_time')
         amount_val = Decimal(str(item.get('amount', 0)))
+        balance_val = Decimal(str(item['balance'])) if item.get('balance') not in (None, '') else None
 
         payment = RawPayment.objects.create(
             transaction_id=txn_id,
             payment_date=payment_date if payment_date else None,
             payment_time=payment_time if payment_time else None,
             sender_name=item.get('sender_name', ''),
+            recipient_name=item.get('recipient_name', ''),
             sender_phone=item.get('sender_phone', ''),
             amount=amount_val,
+            balance=balance_val,
             raw_text=item.get('raw_text', ''),
             status='manual',
         )
@@ -130,7 +150,8 @@ def api_import_payments(request):
         imported_count += 1
 
     return Response({
-        'detail': f'Imported {imported_count} receipt(s). {skipped_count} skipped (duplicates).',
+        'detail': f'Imported {imported_count} receipt(s). Updated {updated_count} existing receipt(s). {skipped_count} duplicate(s) skipped.',
         'imported_count': imported_count,
+        'updated_count': updated_count,
         'skipped_count': skipped_count,
     })

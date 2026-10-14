@@ -6,7 +6,6 @@ import {
   FileSpreadsheet,
   CheckCircle2,
   ShieldCheck,
-  BookOpenCheck,
   LogIn,
   LogOut,
   ExternalLink,
@@ -31,7 +30,7 @@ export default function Navbar({
     { id: 'import', label: 'Import Receipts', icon: FileSpreadsheet },
     {
       id: 'confirmations',
-      label: 'Confirmations',
+      label: 'Payment Allocation',
       icon: CheckCircle2,
       badge: pendingCount > 0 ? pendingCount : null,
       badgeColor: 'amber'
@@ -43,7 +42,6 @@ export default function Navbar({
       badge: pendingVerifications > 0 ? pendingVerifications : null,
       badgeColor: 'rose'
     },
-    { id: 'masterlog', label: 'Master Log', icon: BookOpenCheck },
   ];
 
   return (
